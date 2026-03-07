@@ -1,4 +1,17 @@
 from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+
+class ExerciseOut(BaseModel):
+    id: int
+    name: str
+    body_part: Optional[str] = None
+    equipment: Optional[str] = None
+    target_muscle: Optional[str] = None
+    difficulty: Optional[str] = None
+    description: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class WorkoutBase(BaseModel):
     date: str = Field(..., examples=["2026-02-17"], description="YYYY-MM-DD")

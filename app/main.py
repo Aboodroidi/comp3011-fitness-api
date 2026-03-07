@@ -1,22 +1,20 @@
 from fastapi import FastAPI
 
-from .db import engine
-from .models import WorkoutLog
-from .routers import workouts, analytics
+from app.routers import workouts, analytics, exercises  
 
-app = FastAPI(
-    title="COMP3011 Fitness API",
-    version="0.3.0",
-    description="Fitness workout logging + analytics API (CRUD + insights).",
-)
+from app.db import Base, engine
+import app.models
+import app.models_exercises
 
-# Create tables on startup (simple + suitable for coursework)
-WorkoutLog.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
-@app.get("/health", tags=["System"])
-def health_check():
-    return {"status": "ok"}
+app = FastAPI(title="Fitness API")
 
-# Routers
 app.include_router(workouts.router)
 app.include_router(analytics.router)
+app.include_router(exercises.router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
