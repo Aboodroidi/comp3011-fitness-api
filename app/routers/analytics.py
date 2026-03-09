@@ -11,6 +11,12 @@ from app.schemas import WeeklySummaryOut, WorkoutStreakOut
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
+def parse_workout_date(value):
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value))
+
+
 @router.get(
     "/streak",
     response_model=WorkoutStreakOut,
@@ -27,7 +33,7 @@ def get_workout_streak(db: Session = Depends(get_db)):
             "total_workout_days": 0,
         }
 
-    unique_dates = sorted({w.date for w in workouts})
+    unique_dates = sorted({parse_workout_date(w.date) for w in workouts})
     total_workout_days = len(unique_dates)
 
     longest_streak = 1
@@ -73,15 +79,17 @@ def get_weekly_summary(
 ):
     week_end = week_start + timedelta(days=6)
 
-    workouts = (
-        db.query(WorkoutLog)
-        .filter(WorkoutLog.date >= week_start, WorkoutLog.date <= week_end)
-        .all()
-    )
+    workouts = db.query(WorkoutLog).all()
 
-    total_sessions = len(workouts)
-    total_minutes = sum(w.duration_min for w in workouts)
-    sessions_by_type = dict(Counter(w.workout_type for w in workouts))
+    filtered_workouts = []
+    for workout in workouts:
+        workout_date = parse_workout_date(workout.date)
+        if week_start <= workout_date <= week_end:
+            filtered_workouts.append(workout)
+
+    total_sessions = len(filtered_workouts)
+    total_minutes = sum(w.duration_min for w in filtered_workouts)
+    sessions_by_type = dict(Counter(w.workout_type for w in filtered_workouts))
 
     return {
         "week_start": week_start,
