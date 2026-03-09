@@ -1,6 +1,32 @@
-from pydantic import BaseModel, Field
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from datetime import date
+from typing import Dict, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class WorkoutBase(BaseModel):
+    date: date
+    workout_type: str = Field(..., min_length=1, max_length=100)
+    duration_min: int = Field(..., ge=1, le=600)
+    notes: Optional[str] = None
+
+
+class WorkoutCreate(WorkoutBase):
+    pass
+
+
+class WorkoutUpdate(BaseModel):
+    date: Optional[date] = None
+    workout_type: Optional[str] = Field(None, min_length=1, max_length=100)
+    duration_min: Optional[int] = Field(None, ge=1, le=600)
+    notes: Optional[str] = None
+
+
+class WorkoutOut(WorkoutBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ExerciseOut(BaseModel):
     id: int
@@ -13,23 +39,20 @@ class ExerciseOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class WorkoutBase(BaseModel):
-    date: str = Field(..., examples=["2026-02-17"], description="YYYY-MM-DD")
-    workout_type: str = Field(..., examples=["Push", "Pull", "Legs", "Cardio"])
-    duration_min: int = Field(..., ge=1, le=600)
-    notes: str | None = Field(default=None, max_length=300)
 
-class WorkoutCreate(WorkoutBase):
-    pass
+class HealthOut(BaseModel):
+    status: str
 
-class WorkoutUpdate(BaseModel):
-    date: str | None = Field(default=None, examples=["2026-02-17"])
-    workout_type: str | None = None
-    duration_min: int | None = Field(default=None, ge=1, le=600)
-    notes: str | None = Field(default=None, max_length=300)
 
-class WorkoutOut(WorkoutBase):
-    id: int
+class WorkoutStreakOut(BaseModel):
+    current_streak: int
+    longest_streak: int
+    total_workout_days: int
 
-    class Config:
-        from_attributes = True
+
+class WeeklySummaryOut(BaseModel):
+    week_start: date
+    week_end: date
+    total_sessions: int
+    total_minutes: int
+    sessions_by_type: Dict[str, int]
