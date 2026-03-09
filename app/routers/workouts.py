@@ -1,22 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from ..db import SessionLocal
+from ..db import get_db
 from .. import models, schemas
 
 router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-
-@router.post("", response_model=schemas.WorkoutOut, status_code=status.HTTP_201_CREATED)
-def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db)):
+@router.post(
+    "",
+    response_model=schemas.WorkoutOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Workout",
+    description="Create a new workout record."
+)
+def create_workout(
+    workout: schemas.WorkoutCreate,
+    db: Session = Depends(get_db)
+):
     new_workout = models.WorkoutLog(
         date=workout.date,
         workout_type=workout.workout_type,
@@ -29,50 +31,89 @@ def create_workout(workout: schemas.WorkoutCreate, db: Session = Depends(get_db)
     return new_workout
 
 
-@router.get("", response_model=list[schemas.WorkoutOut])
+@router.get(
+    "",
+    response_model=list[schemas.WorkoutOut],
+    summary="List Workouts",
+    description="Retrieve a list of workout records with optional pagination."
+)
 def list_workouts(
     db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return"),
 ):
-    stmt = select(models.WorkoutLog).offset(skip).limit(limit).order_by(models.WorkoutLog.id.desc())
+    stmt = (
+        select(models.WorkoutLog)
+        .offset(skip)
+        .limit(limit)
+        .order_by(models.WorkoutLog.id.desc())
+    )
     return db.execute(stmt).scalars().all()
 
 
-@router.get("/{workout_id}", response_model=schemas.WorkoutOut)
-def get_workout(workout_id: int, db: Session = Depends(get_db)):
+@router.get(
+    "/{workout_id}",
+    response_model=schemas.WorkoutOut,
+    summary="Get Workout",
+    description="Retrieve a specific workout using its unique ID."
+)
+def get_workout(
+    workout_id: int,
+    db: Session = Depends(get_db)
+):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
-        raise HTTPException(status_code=404, detail="Workout not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workout not found"
+        )
     return workout
 
 
-@router.put("/{workout_id}", response_model=schemas.WorkoutOut)
-def update_workout(workout_id: int, payload: schemas.WorkoutUpdate, db: Session = Depends(get_db)):
+@router.put(
+    "/{workout_id}",
+    response_model=schemas.WorkoutOut,
+    summary="Update Workout",
+    description="Update an existing workout entry using its unique ID."
+)
+def update_workout(
+    workout_id: int,
+    payload: schemas.WorkoutUpdate,
+    db: Session = Depends(get_db)
+):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
-        raise HTTPException(status_code=404, detail="Workout not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workout not found"
+        )
 
-    # Update only provided fields
-    if payload.date is not None:
-        workout.date = payload.date
-    if payload.workout_type is not None:
-        workout.workout_type = payload.workout_type
-    if payload.duration_min is not None:
-        workout.duration_min = payload.duration_min
-    if payload.notes is not None:
-        workout.notes = payload.notes
+    update_data = payload.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(workout, key, value)
 
     db.commit()
     db.refresh(workout)
     return workout
 
 
-@router.delete("/{workout_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_workout(workout_id: int, db: Session = Depends(get_db)):
+@router.delete(
+    "/{workout_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Workout",
+    description="Delete a workout entry using its unique ID."
+)
+def delete_workout(
+    workout_id: int,
+    db: Session = Depends(get_db)
+):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
-        raise HTTPException(status_code=404, detail="Workout not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workout not found"
+        )
 
     db.delete(workout)
     db.commit()
