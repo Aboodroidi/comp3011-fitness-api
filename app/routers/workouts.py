@@ -7,17 +7,30 @@ from .. import models, schemas
 
 router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
+not_found_response = {
+    404: {
+        "description": "Workout not found",
+        "content": {
+            "application/json": {
+                "example": {
+                    "detail": "Workout not found"
+                }
+            }
+        },
+    }
+}
+
 
 @router.post(
     "",
     response_model=schemas.WorkoutOut,
     status_code=status.HTTP_201_CREATED,
     summary="Create Workout",
-    description="Create a new workout record."
+    description="Create a new workout record.",
 )
 def create_workout(
     workout: schemas.WorkoutCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     new_workout = models.WorkoutLog(
         date=workout.date,
@@ -35,7 +48,7 @@ def create_workout(
     "",
     response_model=list[schemas.WorkoutOut],
     summary="List Workouts",
-    description="Retrieve a list of workout records with optional pagination."
+    description="Retrieve a list of workout records with optional pagination.",
 )
 def list_workouts(
     db: Session = Depends(get_db),
@@ -55,17 +68,18 @@ def list_workouts(
     "/{workout_id}",
     response_model=schemas.WorkoutOut,
     summary="Get Workout",
-    description="Retrieve a specific workout using its unique ID."
+    description="Retrieve a specific workout using its unique ID.",
+    responses=not_found_response,
 )
 def get_workout(
     workout_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found"
+            detail="Workout not found",
         )
     return workout
 
@@ -74,18 +88,19 @@ def get_workout(
     "/{workout_id}",
     response_model=schemas.WorkoutOut,
     summary="Update Workout",
-    description="Update an existing workout entry using its unique ID."
+    description="Update an existing workout entry using its unique ID.",
+    responses=not_found_response,
 )
 def update_workout(
     workout_id: int,
     payload: schemas.WorkoutUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found"
+            detail="Workout not found",
         )
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -102,17 +117,18 @@ def update_workout(
     "/{workout_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete Workout",
-    description="Delete a workout entry using its unique ID."
+    description="Delete a workout entry using its unique ID.",
+    responses=not_found_response,
 )
 def delete_workout(
     workout_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     workout = db.get(models.WorkoutLog, workout_id)
     if not workout:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workout not found"
+            detail="Workout not found",
         )
 
     db.delete(workout)

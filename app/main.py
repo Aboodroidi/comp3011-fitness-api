@@ -10,9 +10,9 @@ import app.models_exercises
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Fitness API",
+    title="COMP3011 Fitness API",
     description="A RESTful API for logging workouts, analysing training activity, and searching a preloaded exercise dataset.",
-    version="0.1.0",
+    version="1.0.0",
 )
 
 app.include_router(workouts.router)
@@ -25,7 +25,7 @@ app.include_router(exercises.router)
     response_model=HealthOut,
     tags=["System"],
     summary="Health Check",
-    description="Returns the current health status of the API service."
+    description="Returns the current health status of the API service.",
 )
 def health():
     return {"status": "ok"}
