@@ -1,12 +1,11 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models_exercises import Exercise
 from app.schemas import ExerciseOut
+from app.services.exercise_service import search_exercises
 
 router = APIRouter(
     prefix="/exercises",
@@ -53,37 +52,13 @@ def list_exercises(
     ),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Exercise)
-
-    if q:
-        query = query.filter(
-            or_(
-                Exercise.name.ilike(f"%{q}%"),
-                Exercise.description.ilike(f"%{q}%")
-            )
-        )
-
-    if body_part:
-        query = query.filter(Exercise.body_part == body_part)
-
-    if equipment:
-        query = query.filter(Exercise.equipment == equipment)
-
-    if difficulty:
-        query = query.filter(Exercise.difficulty == difficulty)
-
-    if exercise_type:
-        query = query.filter(Exercise.exercise_type == exercise_type)
-
-    if sort_by == "rating_low_high":
-        query = query.order_by(Exercise.rating.asc().nullslast(), Exercise.id.asc())
-    elif sort_by == "rating_high_low":
-        query = query.order_by(Exercise.rating.desc().nullslast(), Exercise.id.asc())
-    else:
-        # recommended
-        query = query.order_by(
-            Exercise.rating.desc().nullslast(),
-            Exercise.name.asc()
-        )
-
-    return query.limit(limit).all()
+    return search_exercises(
+        db=db,
+        q=q,
+        body_part=body_part,
+        equipment=equipment,
+        difficulty=difficulty,
+        exercise_type=exercise_type,
+        sort_by=sort_by,
+        limit=limit,
+    )
