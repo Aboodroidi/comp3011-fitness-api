@@ -1,31 +1,27 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from app.db import Base, engine
-from app.schemas import HealthOut
-from app.routers import analytics, exercises, workouts
-
-import app.models
-import app.models_exercises
-
-Base.metadata.create_all(bind=engine)
+from app.routers import workouts, analytics, exercises
 
 app = FastAPI(
     title="COMP3011 Fitness API",
-    description="A RESTful API for logging workouts, analysing training activity, and searching a preloaded exercise dataset.",
     version="1.0.0",
+    description="A fitness tracking API with workout logging, analytics, and exercise search."
 )
+
+Base.metadata.create_all(bind=engine)
 
 app.include_router(workouts.router)
 app.include_router(analytics.router)
 app.include_router(exercises.router)
 
+templates = Jinja2Templates(directory="app/templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-@app.get(
-    "/health",
-    response_model=HealthOut,
-    tags=["System"],
-    summary="Health Check",
-    description="Returns the current health status of the API service.",
-)
-def health():
-    return {"status": "ok"}
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
