@@ -1,35 +1,56 @@
 import csv
 from pathlib import Path
 
-from app.db import SessionLocal
+from app.db import Base, SessionLocal, engine
 from app.models_exercises import Exercise
 
 
-DATA_FILE = Path("data/gym_exercises.csv")
+DATA_FILE = Path("data/megaGymDataset.csv")
+
+
+def clean_value(value):
+    if value is None:
+        return None
+
+    value = str(value).strip()
+    return value if value else None
+
+
+def clean_float(value):
+    value = clean_value(value)
+    if value is None:
+        return None
+
+    try:
+        return float(value)
+    except ValueError:
+        return None
 
 
 def seed(db):
     inserted = 0
 
-    # avoid inserting duplicates if script runs more than once
-    if db.query(Exercise).count() > 0:
-        return 0
+    # Clear existing exercise rows so the script can be rerun safely
+    db.query(Exercise).delete()
+    db.commit()
 
     with DATA_FILE.open(encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
 
         for row in reader:
-            name = row.get("Exercise_Name")
+            name = clean_value(row.get("Title"))
             if not name:
                 continue
 
             exercise = Exercise(
-                name=name.strip(),
-                body_part=(row.get("muscle_gp") or "").strip() or None,
-                equipment=(row.get("Equipment") or "").strip() or None,
-                target_muscle=(row.get("muscle_gp_details") or "").strip() or None,
-                difficulty=(row.get("Rating") or "").strip() or None,
-                description=(row.get("Description") or "").strip() or None,
+                name=name,
+                body_part=clean_value(row.get("BodyPart")),
+                equipment=clean_value(row.get("Equipment")),
+                difficulty=clean_value(row.get("Level")),
+                exercise_type=clean_value(row.get("Type")),
+                description=clean_value(row.get("Desc")),
+                rating=clean_float(row.get("Rating")),
+                rating_desc=clean_value(row.get("RatingDesc")),
             )
 
             db.add(exercise)
@@ -40,6 +61,9 @@ def seed(db):
 
 
 def main():
+    # Create tables first if they do not exist yet
+    Base.metadata.create_all(bind=engine)
+
     db = SessionLocal()
     try:
         inserted = seed(db)

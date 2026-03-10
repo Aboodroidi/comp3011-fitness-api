@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Float
+from .db import Base
 
-from .db import Base  
 
 class Exercise(Base):
     __tablename__ = "exercises"
@@ -9,6 +9,8 @@ class Exercise(Base):
     name = Column(String(200), nullable=False, index=True)
     body_part = Column(String(100), nullable=True, index=True)
     equipment = Column(String(100), nullable=True, index=True)
-    target_muscle = Column(String(100), nullable=True, index=True)
-    difficulty = Column(String(50), nullable=True)
+    difficulty = Column(String(50), nullable=True, index=True)
+    exercise_type = Column(String(100), nullable=True, index=True)
     description = Column(Text, nullable=True)
+    rating = Column(Float, nullable=True)
+    rating_desc = Column(Text, nullable=True)

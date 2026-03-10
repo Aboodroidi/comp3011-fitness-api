@@ -1,277 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-<meta charset="UTF-8">
-<title>Fitness Tracker Dashboard</title>
-
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background:#f4f6f8;
-    margin:0;
-    padding:0;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:30px;
-}
-
-.card{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.05);
-}
-
-h1{
-    margin-top:0;
-}
-
-button{
-    padding:10px 15px;
-    background:black;
-    color:white;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#333;
-}
-
-.delete{
-    background:#c0392b;
-}
-
-input, textarea{
-    width:100%;
-    padding:8px;
-    margin-bottom:10px;
-    border-radius:6px;
-    border:1px solid #ddd;
-}
-
-.workout{
-    border:1px solid #eee;
-    padding:10px;
-    border-radius:8px;
-    margin-top:10px;
-}
-
-.analytics{
-    display:flex;
-    gap:20px;
-}
-
-.analytics div{
-    flex:1;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    text-align:center;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
-
 <body>
+    <div class="container">
+        <header>
+            <h1>Fitness Dashboard</h1>
+            <p>Simple UI for the COMP3011 Fitness API</p>
+        </header>
+
+        <section class="card">
+            <h2>Add Workout</h2>
+            <form id="workout-form">
+                <input
+                    id="type"
+                    type="text"
+                    placeholder="Workout type (Push / Legs / Run)"
+                    required
+                >
+
+                <input
+                    id="duration"
+                    type="number"
+                    placeholder="Duration (minutes)"
+                    min="1"
+                    required
+                >
+
+                <input
+                    id="date"
+                    type="date"
+                    required
+                >
+
+                <textarea
+                    id="notes"
+                    placeholder="Notes"
+                    rows="3"
+                ></textarea>
+
+                <button type="submit">Add Workout</button>
+            </form>
+
+            <p id="message"></p>
+        </section>
+
+        <section class="card">
+            <h2>Analytics</h2>
+            <div class="analytics">
+                <div class="stat-box">
+                    <h3>Current Streak</h3>
+                    <p id="current">0</p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>Longest Streak</h3>
+                    <p id="longest">0</p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>Total Workout Days</h3>
+                    <p id="days">0</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Workout History</h2>
+            <button type="button" onclick="loadWorkouts()">Refresh</button>
+            <div id="workouts"></div>
+        </section>
+
+        <section class="card">
+            <h2>Weekly Summary</h2>
+            <div id="weekly"></div>
+        </section>
+
+        <section class="card">
+            <h2>Exercise Explorer</h2>
+
+            <div class="filters">
+                <input
+                    id="exercise-q"
+                    type="text"
+                    placeholder="Search exercise (e.g. plank, bench press)"
+                >
+
+                <input
+                    id="exercise-body-part"
+                    type="text"
+                    placeholder="Body part (e.g. Chest)"
+                >
+
+                <input
+                    id="exercise-equipment"
+                    type="text"
+                    placeholder="Equipment (e.g. Dumbbell)"
+                >
+
+                <input
+                    id="exercise-difficulty"
+                    type="text"
+                    placeholder="Difficulty (e.g. Beginner)"
+                >
+
+                <input
+                    id="exercise-type"
+                    type="text"
+                    placeholder="Exercise type (e.g. Strength)"
+                >
 
-<div class="container">
+                <button type="button" onclick="loadExercises()">Search Exercises</button>
+            </div>
 
-<h1>Fitness Dashboard</h1>
-<p>Simple UI for the COMP3011 Fitness API</p>
+            <div id="exercises-results"></div>
+        </section>
+    </div>
 
-
-<div class="card">
-<h2>Add Workout</h2>
-
-<form id="form">
-
-<input id="type" placeholder="Workout type (Push / Legs / Run)" required>
-
-<input id="duration" type="number" placeholder="Duration (minutes)" required>
-
-<input id="date" type="date" required>
-
-<textarea id="notes" placeholder="Notes"></textarea>
-
-<button type="submit">Add Workout</button>
-
-</form>
-
-<p id="message"></p>
-
-</div>
-
-
-<div class="card">
-
-<h2>Analytics</h2>
-
-<div class="analytics">
-
-<div>
-<h3>Current Streak</h3>
-<p id="current">-</p>
-</div>
-
-<div>
-<h3>Longest Streak</h3>
-<p id="longest">-</p>
-</div>
-
-<div>
-<h3>Total Workout Days</h3>
-<p id="days">-</p>
-</div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Workout History</h2>
-
-<button onclick="loadWorkouts()">Refresh</button>
-
-<div id="workouts"></div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Weekly Summary</h2>
-
-<div id="weekly"></div>
-
-</div>
-
-
-</div>
-
-
-<script>
-
-const API = ""
-
-
-document.getElementById("form").addEventListener("submit", async e => {
-
-e.preventDefault()
-
-const payload = {
-    workout_type: document.getElementById("type").value,
-    duration_min: parseInt(document.getElementById("duration").value),
-    date: document.getElementById("date").value,
-    notes: document.getElementById("notes").value || null
-}
-
-const res = await fetch(`${API}/workouts`,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(payload)
-})
-
-if(res.ok){
-document.getElementById("message").innerText="Workout added"
-loadWorkouts()
-loadAnalytics()
-}
-else{
-document.getElementById("message").innerText="Error creating workout"
-}
-
-})
-
-
-async function loadWorkouts(){
-
-const res = await fetch(`${API}/workouts`)
-const data = await res.json()
-
-const container = document.getElementById("workouts")
-
-container.innerHTML=""
-
-data.forEach(w => {
-
-container.innerHTML += `
-<div class="workout">
-<b>${w.workout_type}</b><br>
-Date: ${w.date}<br>
-Duration: ${w.duration_min} min<br>
-Notes: ${w.notes ?? "None"}<br><br>
-
-<button class="delete" onclick="deleteWorkout(${w.id})">
-Delete
-</button>
-
-</div>
-`
-
-})
-
-}
-
-
-async function deleteWorkout(id){
-
-await fetch(`${API}/workouts/${id}`,{
-method:"DELETE"
-})
-
-loadWorkouts()
-loadAnalytics()
-
-}
-
-
-async function loadAnalytics(){
-
-const streak = await fetch(`${API}/analytics/streak`)
-const s = await streak.json()
-
-document.getElementById("current").innerText=s.current_streak
-document.getElementById("longest").innerText=s.longest_streak
-document.getElementById("days").innerText=s.total_workout_days
-
-
-const today = new Date()
-
-const monday = new Date(today)
-
-monday.setDate(today.getDate() - (today.getDay()||7) +1)
-
-const weekStart = monday.toISOString().split("T")[0]
-
-const weekly = await fetch(`${API}/analytics/weekly-summary?week_start=${weekStart}`)
-const w = await weekly.json()
-
-document.getElementById("weekly").innerHTML=`
-
-Week Start: ${w.week_start}<br>
-Week End: ${w.week_end}<br>
-Total Sessions: ${w.total_sessions}<br>
-Total Minutes: ${w.total_minutes}
-
-`
-
-}
-
-
-loadWorkouts()
-loadAnalytics()
-
-</script>
-
+    <script src="/static/app.js"></script>
 </body>
-
 </html>

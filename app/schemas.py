@@ -3,6 +3,9 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from typing import Optional
+from pydantic import BaseModel, ConfigDict
+
 
 class WorkoutBase(BaseModel):
     date: dt_date
@@ -80,21 +83,25 @@ class ExerciseOut(BaseModel):
     name: str
     body_part: Optional[str] = None
     equipment: Optional[str] = None
-    target_muscle: Optional[str] = None
     difficulty: Optional[str] = None
+    exercise_type: Optional[str] = None
     description: Optional[str] = None
+    rating: Optional[float] = None
+    rating_desc: Optional[str] = None
 
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={
             "example": {
                 "id": 1,
-                "name": "Bench Press",
-                "body_part": "Chest",
-                "equipment": "Barbell",
-                "target_muscle": "Pectorals",
-                "difficulty": "Intermediate",
-                "description": "Compound chest exercise",
+                "name": "Crunch",
+                "body_part": "Abdominals",
+                "equipment": "Body Only",
+                "difficulty": "Beginner",
+                "exercise_type": "Strength",
+                "description": "A core exercise targeting the abdominal muscles.",
+                "rating": 8.9,
+                "rating_desc": "Highly effective for core activation."
             }
         },
     )
