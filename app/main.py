@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -5,6 +7,8 @@ from fastapi.templating import Jinja2Templates
 
 from app.db import Base, engine
 from app.routers import workouts, analytics, exercises
+
+BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="COMP3011 Fitness API",
@@ -18,8 +22,8 @@ app.include_router(workouts.router)
 app.include_router(analytics.router)
 app.include_router(exercises.router)
 
-templates = Jinja2Templates(directory="app/templates")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
