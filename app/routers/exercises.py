@@ -41,6 +41,10 @@ def list_exercises(
         default=None,
         description="Filter by exercise type"
     ),
+    sort_by: Optional[str] = Query(
+        default="recommended",
+        description="Sort results: recommended, rating_low_high, rating_high_low"
+    ),
     limit: int = Query(
         default=50,
         ge=1,
@@ -71,4 +75,15 @@ def list_exercises(
     if exercise_type:
         query = query.filter(Exercise.exercise_type == exercise_type)
 
-    return query.order_by(Exercise.id.asc()).limit(limit).all()
+    if sort_by == "rating_low_high":
+        query = query.order_by(Exercise.rating.asc().nullslast(), Exercise.id.asc())
+    elif sort_by == "rating_high_low":
+        query = query.order_by(Exercise.rating.desc().nullslast(), Exercise.id.asc())
+    else:
+        # recommended
+        query = query.order_by(
+            Exercise.rating.desc().nullslast(),
+            Exercise.name.asc()
+        )
+
+    return query.limit(limit).all()

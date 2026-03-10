@@ -135,6 +135,7 @@ async function loadExercises() {
     const equipment = document.getElementById("exercise-equipment").value.trim();
     const difficulty = document.getElementById("exercise-difficulty").value.trim();
     const exerciseType = document.getElementById("exercise-type").value.trim();
+    const sortBy = document.getElementById("exercise-sort").value;
 
     const params = new URLSearchParams();
 
@@ -143,6 +144,7 @@ async function loadExercises() {
     if (equipment) params.append("equipment", equipment);
     if (difficulty) params.append("difficulty", difficulty);
     if (exerciseType) params.append("exercise_type", exerciseType);
+    if (sortBy) params.append("sort_by", sortBy);
 
     params.append("limit", "20");
 

@@ -82,41 +82,47 @@
 
         <section class="card">
             <h2>Exercise Explorer</h2>
-
+        
             <div class="filters">
                 <input
                     id="exercise-q"
                     type="text"
                     placeholder="Search exercise (e.g. plank, bench press)"
                 >
-
+        
                 <input
                     id="exercise-body-part"
                     type="text"
                     placeholder="Body part (e.g. Chest)"
                 >
-
+        
                 <input
                     id="exercise-equipment"
                     type="text"
                     placeholder="Equipment (e.g. Dumbbell)"
                 >
-
+        
                 <input
                     id="exercise-difficulty"
                     type="text"
                     placeholder="Difficulty (e.g. Beginner)"
                 >
-
+        
                 <input
                     id="exercise-type"
                     type="text"
                     placeholder="Exercise type (e.g. Strength)"
                 >
-
+        
+                <select id="exercise-sort">
+                    <option value="recommended">Recommended</option>
+                    <option value="rating_high_low">Rating: High to Low</option>
+                    <option value="rating_low_high">Rating: Low to High</option>
+                </select>
+        
                 <button type="button" onclick="loadExercises()">Search Exercises</button>
             </div>
-
+        
             <div id="exercises-results"></div>
         </section>
     </div>
