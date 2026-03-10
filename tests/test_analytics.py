@@ -39,7 +39,7 @@ def test_workout_streak_with_data(client):
     data = response.json()
     assert data["current_streak"] >= 1
     assert data["longest_streak"] >= 1
-    assert data["total_workout_days"] >= 3
+    assert data["total_workout_days"] == 3
 
 
 def test_weekly_summary_requires_week_start(client):
@@ -76,3 +76,10 @@ def test_weekly_summary_returns_expected_shape(client):
     assert "total_sessions" in data
     assert "total_minutes" in data
     assert "sessions_by_type" in data
+
+
+def test_health_check(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}

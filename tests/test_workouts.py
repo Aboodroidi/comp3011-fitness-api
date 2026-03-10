@@ -1,10 +1,3 @@
-def test_health_check(client):
-    response = client.get("/health")
-
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
-
-
 def test_create_workout(client):
     payload = {
         "date": "2026-03-07",
@@ -36,7 +29,7 @@ def test_list_workouts(client):
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    assert len(data) >= 1
+    assert len(data) == 1
 
 
 def test_get_workout_by_id(client):

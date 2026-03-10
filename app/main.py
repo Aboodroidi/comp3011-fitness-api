@@ -1,31 +1,54 @@
-from pathlib import Path
-
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.requests import Request
 
 from app.db import Base, engine
-from app.routers import workouts, analytics, exercises
+from app.routers import workouts
+from app.routers import analytics
+from app.routers import exercises
 
-BASE_DIR = Path(__file__).resolve().parent
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(
     title="COMP3011 Fitness API",
-    version="1.0.0",
-    description="A fitness tracking API with workout logging, analytics, and exercise search."
+    description="Fitness tracking API with exercise search and workout analytics.",
+    version="1.0.0"
 )
 
-Base.metadata.create_all(bind=engine)
 
+# Static files (CSS / JS)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+# Templates (UI)
+templates = Jinja2Templates(directory="app/templates")
+
+
+# Routers
 app.include_router(workouts.router)
 app.include_router(analytics.router)
 app.include_router(exercises.router)
 
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+
+# UI Dashboard
+@app.get("/", tags=["UI"])
+def dashboard(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
 
 
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+# Health check endpoint
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Health check",
+    description="Verify that the API is running."
+)
+def health_check():
+    return {"status": "ok"}

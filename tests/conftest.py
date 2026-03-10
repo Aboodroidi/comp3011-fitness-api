@@ -64,6 +64,13 @@ def db_session():
         db.close()
 
 
+@pytest.fixture(autouse=True)
+def clean_database(db_session):
+    for table in reversed(Base.metadata.sorted_tables):
+        db_session.execute(table.delete())
+    db_session.commit()
+
+
 @pytest.fixture()
 def client():
     fastapi_app.dependency_overrides[get_db] = override_get_db
