@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
+from typing import List, Optional
 
 class WorkoutBase(BaseModel):
     date: dt_date
@@ -158,3 +159,14 @@ class WeeklySummaryOut(BaseModel):
             }
         }
     )
+
+class ExerciseFiltersOut(BaseModel):
+    body_parts: List[str]
+    equipment: List[str]
+    difficulty: List[str]
+    exercise_types: List[str]
+    total_exercises: int
+
+class ExerciseDistributionItem(BaseModel):
+    category: str
+    count: int

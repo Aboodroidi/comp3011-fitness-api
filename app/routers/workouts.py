@@ -1,9 +1,12 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
 from .. import models, schemas
+from app.services.workout_plan_service import build_workout_plan
 
 router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
@@ -62,6 +65,41 @@ def list_workouts(
         .order_by(models.WorkoutLog.id.desc())
     )
     return db.execute(stmt).scalars().all()
+
+
+@router.get(
+    "/suggest-plan",
+    summary="Suggest a workout plan",
+    description="Returns a simple workout plan using the exercise dataset based on goal, number of training days, equipment, and difficulty."
+)
+def suggest_workout_plan(
+    goal: str = Query(
+        default="strength",
+        description="Training goal: strength, hypertrophy, or general_fitness"
+    ),
+    days: int = Query(
+        default=3,
+        ge=3,
+        le=5,
+        description="Number of training days per week"
+    ),
+    equipment: Optional[str] = Query(
+        default=None,
+        description="Preferred equipment"
+    ),
+    difficulty: Optional[str] = Query(
+        default=None,
+        description="Preferred difficulty level"
+    ),
+    db: Session = Depends(get_db),
+):
+    return build_workout_plan(
+        db=db,
+        goal=goal,
+        days=days,
+        equipment=equipment,
+        difficulty=difficulty,
+    )
 
 
 @router.get(

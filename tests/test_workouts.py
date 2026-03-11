@@ -1,3 +1,6 @@
+from app.models_exercises import Exercise
+
+
 def test_create_workout(client):
     payload = {
         "date": "2026-03-07",
@@ -127,3 +130,52 @@ def test_create_workout_invalid_input_returns_422(client):
     response = client.post("/workouts", json=payload)
 
     assert response.status_code == 422
+
+
+def test_suggest_workout_plan(client, db_session):
+    exercises = [
+        Exercise(
+            name="Bench Press",
+            body_part="Chest",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Chest exercise",
+            rating=8.5,
+            rating_desc="Very good"
+        ),
+        Exercise(
+            name="Back Squat",
+            body_part="Quadriceps",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Leg exercise",
+            rating=8.8,
+            rating_desc="Excellent"
+        ),
+        Exercise(
+            name="Pull-Up",
+            body_part="Lats",
+            equipment="Body Only",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Back exercise",
+            rating=9.0,
+            rating_desc="Excellent"
+        ),
+    ]
+    db_session.add_all(exercises)
+    db_session.commit()
+
+    response = client.get("/workouts/suggest-plan?goal=strength&days=3")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["goal"] == "strength"
+    assert data["days"] == 3
+    assert "plan" in data
+    assert len(data["plan"]) == 3
+    assert "focus" in data["plan"][0]
+    assert "exercises" in data["plan"][0]

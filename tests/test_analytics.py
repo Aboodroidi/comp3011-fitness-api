@@ -1,3 +1,6 @@
+from app.models_exercises import Exercise
+
+
 def test_workout_streak_empty_database(client):
     response = client.get("/analytics/streak")
 
@@ -83,3 +86,197 @@ def test_health_check(client):
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def seed_exercise_distribution_data(db_session):
+    exercises = [
+        Exercise(
+            name="Bench Press",
+            body_part="Chest",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Chest press",
+            rating=8.5,
+            rating_desc="Very good"
+        ),
+        Exercise(
+            name="Incline Dumbbell Press",
+            body_part="Chest",
+            equipment="Dumbbell",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Upper chest press",
+            rating=7.2,
+            rating_desc="Good"
+        ),
+        Exercise(
+            name="Plank",
+            body_part="Abdominals",
+            equipment="Body Only",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Core stability exercise",
+            rating=9.1,
+            rating_desc="Excellent"
+        ),
+    ]
+    db_session.add_all(exercises)
+    db_session.commit()
+
+
+def test_exercise_distribution_by_body_part(client, db_session):
+    seed_exercise_distribution_data(db_session)
+
+    response = client.get("/analytics/exercise-distribution/body-part")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert isinstance(data, list)
+    assert len(data) >= 2
+
+    categories = {item["category"]: item["count"] for item in data}
+    assert categories["Chest"] == 2
+    assert categories["Abdominals"] == 1
+
+
+def test_exercise_distribution_by_equipment(client, db_session):
+    exercises = [
+        Exercise(
+            name="Bench Press",
+            body_part="Chest",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Chest press",
+            rating=8.5,
+            rating_desc="Very good"
+        ),
+        Exercise(
+            name="Back Squat",
+            body_part="Quadriceps",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Leg exercise",
+            rating=8.8,
+            rating_desc="Excellent"
+        ),
+        Exercise(
+            name="Plank",
+            body_part="Abdominals",
+            equipment="Body Only",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Core stability",
+            rating=9.1,
+            rating_desc="Excellent"
+        ),
+    ]
+    db_session.add_all(exercises)
+    db_session.commit()
+
+    response = client.get("/analytics/exercise-distribution/equipment")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert isinstance(data, list)
+    assert len(data) >= 2
+
+    categories = {item["category"]: item["count"] for item in data}
+    assert categories["Barbell"] == 2
+    assert categories["Body Only"] == 1
+
+
+def test_top_rated_exercises_returns_highest_first(client, db_session):
+    exercises = [
+        Exercise(
+            name="Bench Press",
+            body_part="Chest",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Chest press",
+            rating=8.5,
+            rating_desc="Very good"
+        ),
+        Exercise(
+            name="Incline Dumbbell Press",
+            body_part="Chest",
+            equipment="Dumbbell",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Upper chest press",
+            rating=7.2,
+            rating_desc="Good"
+        ),
+        Exercise(
+            name="Plank",
+            body_part="Abdominals",
+            equipment="Body Only",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Core stability",
+            rating=9.1,
+            rating_desc="Excellent"
+        ),
+    ]
+    db_session.add_all(exercises)
+    db_session.commit()
+
+    response = client.get("/analytics/top-rated-exercises?limit=2")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 2
+    assert data[0]["name"] == "Plank"
+    assert data[1]["name"] == "Bench Press"
+
+
+def test_top_rated_exercises_with_filter(client, db_session):
+    exercises = [
+        Exercise(
+            name="Bench Press",
+            body_part="Chest",
+            equipment="Barbell",
+            difficulty="Intermediate",
+            exercise_type="Strength",
+            description="Chest press",
+            rating=8.5,
+            rating_desc="Very good"
+        ),
+        Exercise(
+            name="Incline Dumbbell Press",
+            body_part="Chest",
+            equipment="Dumbbell",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Upper chest press",
+            rating=7.2,
+            rating_desc="Good"
+        ),
+        Exercise(
+            name="Plank",
+            body_part="Abdominals",
+            equipment="Body Only",
+            difficulty="Beginner",
+            exercise_type="Strength",
+            description="Core stability",
+            rating=9.1,
+            rating_desc="Excellent"
+        ),
+    ]
+    db_session.add_all(exercises)
+    db_session.commit()
+
+    response = client.get("/analytics/top-rated-exercises?body_part=Chest&limit=5")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 2
+    assert all(item["body_part"] == "Chest" for item in data)
+    assert data[0]["rating"] >= data[1]["rating"]
