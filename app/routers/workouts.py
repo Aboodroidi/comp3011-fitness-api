@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ..db import get_db
 from .. import models, schemas
@@ -24,6 +24,32 @@ not_found_response = {
 }
 
 
+def _attach_workout_exercises(
+    workout: models.WorkoutLog,
+    exercise_entries: list[schemas.WorkoutExerciseCreate],
+):
+    for entry in exercise_entries:
+        workout.exercises.append(
+            models.WorkoutExercise(
+                exercise_id=entry.exercise_id,
+                sets=entry.sets,
+                reps=entry.reps,
+                weight_kg=entry.weight_kg,
+            )
+        )
+
+
+def _get_workout_with_exercises(db: Session, workout_id: int):
+    stmt = (
+        select(models.WorkoutLog)
+        .options(
+            selectinload(models.WorkoutLog.exercises).selectinload(models.WorkoutExercise.exercise)
+        )
+        .where(models.WorkoutLog.id == workout_id)
+    )
+    return db.execute(stmt).scalars().first()
+
+
 @router.post(
     "",
     response_model=schemas.WorkoutOut,
@@ -36,15 +62,21 @@ def create_workout(
     db: Session = Depends(get_db),
 ):
     new_workout = models.WorkoutLog(
-        date=workout.date,
+        date=workout.date.isoformat(),
         workout_type=workout.workout_type,
         duration_min=workout.duration_min,
         notes=workout.notes,
     )
+
     db.add(new_workout)
+    db.flush()
+
+    _attach_workout_exercises(new_workout, workout.exercises)
+
     db.commit()
-    db.refresh(new_workout)
-    return new_workout
+
+    created_workout = _get_workout_with_exercises(db, new_workout.id)
+    return created_workout
 
 
 @router.get(
@@ -60,6 +92,9 @@ def list_workouts(
 ):
     stmt = (
         select(models.WorkoutLog)
+        .options(
+            selectinload(models.WorkoutLog.exercises).selectinload(models.WorkoutExercise.exercise)
+        )
         .offset(skip)
         .limit(limit)
         .order_by(models.WorkoutLog.id.desc())
@@ -113,7 +148,8 @@ def get_workout(
     workout_id: int,
     db: Session = Depends(get_db),
 ):
-    workout = db.get(models.WorkoutLog, workout_id)
+    workout = _get_workout_with_exercises(db, workout_id)
+
     if not workout:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -134,21 +170,35 @@ def update_workout(
     payload: schemas.WorkoutUpdate,
     db: Session = Depends(get_db),
 ):
-    workout = db.get(models.WorkoutLog, workout_id)
+    workout = _get_workout_with_exercises(db, workout_id)
+
     if not workout:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Workout not found",
         )
 
-    update_data = payload.model_dump(exclude_unset=True)
+    if payload.date is not None:
+        workout.date = payload.date.isoformat()
 
-    for key, value in update_data.items():
-        setattr(workout, key, value)
+    if payload.workout_type is not None:
+        workout.workout_type = payload.workout_type
+
+    if payload.duration_min is not None:
+        workout.duration_min = payload.duration_min
+
+    if payload.notes is not None:
+        workout.notes = payload.notes
+
+    if payload.exercises is not None:
+        workout.exercises.clear()
+        db.flush()
+        _attach_workout_exercises(workout, payload.exercises)
 
     db.commit()
-    db.refresh(workout)
-    return workout
+
+    updated_workout = _get_workout_with_exercises(db, workout_id)
+    return updated_workout
 
 
 @router.delete(

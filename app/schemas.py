@@ -1,12 +1,51 @@
 from datetime import date as dt_date
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
 
-from typing import List, Optional
+class WorkoutExerciseBase(BaseModel):
+    exercise_id: int = Field(..., ge=1)
+    sets: int = Field(..., ge=1, le=20)
+    reps: int = Field(..., ge=1, le=100)
+    weight_kg: Optional[int] = Field(default=None, ge=0, le=1000)
+
+
+class WorkoutExerciseCreate(WorkoutExerciseBase):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "exercise_id": 1,
+                "sets": 4,
+                "reps": 10,
+                "weight_kg": 60
+            }
+        }
+    )
+
+
+class WorkoutExerciseOut(WorkoutExerciseBase):
+    id: int
+    exercise_name: Optional[str] = None
+    body_part: Optional[str] = None
+    equipment: Optional[str] = None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "exercise_id": 1,
+                "exercise_name": "Bench Press",
+                "body_part": "Chest",
+                "equipment": "Barbell",
+                "sets": 4,
+                "reps": 10,
+                "weight_kg": 60
+            }
+        }
+    )
+
 
 class WorkoutBase(BaseModel):
     date: dt_date
@@ -16,6 +55,8 @@ class WorkoutBase(BaseModel):
 
 
 class WorkoutCreate(WorkoutBase):
+    exercises: List[WorkoutExerciseCreate] = Field(default_factory=list)
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -23,32 +64,25 @@ class WorkoutCreate(WorkoutBase):
                 "workout_type": "Push",
                 "duration_min": 60,
                 "notes": "Chest and shoulders session",
+                "exercises": [
+                    {
+                        "exercise_id": 1,
+                        "sets": 4,
+                        "reps": 10,
+                        "weight_kg": 60
+                    }
+                ]
             }
         }
     )
 
 
 class WorkoutUpdate(BaseModel):
-    date: Optional[dt_date] = Field(
-        default=None,
-        json_schema_extra={"example": "2026-03-10"},
-    )
-    workout_type: Optional[str] = Field(
-        default=None,
-        min_length=1,
-        max_length=100,
-        json_schema_extra={"example": "Pull"},
-    )
-    duration_min: Optional[int] = Field(
-        default=None,
-        ge=1,
-        le=600,
-        json_schema_extra={"example": 45},
-    )
-    notes: Optional[str] = Field(
-        default=None,
-        json_schema_extra={"example": "Back and biceps session"},
-    )
+    date: Optional[dt_date] = Field(default=None)
+    workout_type: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    duration_min: Optional[int] = Field(default=None, ge=1, le=600)
+    notes: Optional[str] = Field(default=None)
+    exercises: Optional[List[WorkoutExerciseCreate]] = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -57,6 +91,14 @@ class WorkoutUpdate(BaseModel):
                 "workout_type": "Pull",
                 "duration_min": 45,
                 "notes": "Back and biceps session",
+                "exercises": [
+                    {
+                        "exercise_id": 2,
+                        "sets": 3,
+                        "reps": 12,
+                        "weight_kg": 25
+                    }
+                ]
             }
         }
     )
@@ -64,6 +106,7 @@ class WorkoutUpdate(BaseModel):
 
 class WorkoutOut(WorkoutBase):
     id: int
+    exercises: List[WorkoutExerciseOut] = Field(default_factory=list)
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -74,6 +117,18 @@ class WorkoutOut(WorkoutBase):
                 "workout_type": "Push",
                 "duration_min": 60,
                 "notes": "Chest and shoulders session",
+                "exercises": [
+                    {
+                        "id": 1,
+                        "exercise_id": 1,
+                        "exercise_name": "Bench Press",
+                        "body_part": "Chest",
+                        "equipment": "Barbell",
+                        "sets": 4,
+                        "reps": 10,
+                        "weight_kg": 60
+                    }
+                ]
             }
         },
     )
@@ -154,11 +209,12 @@ class WeeklySummaryOut(BaseModel):
                     "Push": 1,
                     "Pull": 1,
                     "Legs": 1,
-                    "Cardio": 1,
-                },
+                    "Cardio": 1
+                }
             }
         }
     )
+
 
 class ExerciseFiltersOut(BaseModel):
     body_parts: List[str]
@@ -166,6 +222,7 @@ class ExerciseFiltersOut(BaseModel):
     difficulty: List[str]
     exercise_types: List[str]
     total_exercises: int
+
 
 class ExerciseDistributionItem(BaseModel):
     category: str

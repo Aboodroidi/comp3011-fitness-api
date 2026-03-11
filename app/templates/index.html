@@ -3,127 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Dashboard</title>
+    <title>Fitness Intelligence Dashboard</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Fitness Dashboard</h1>
-            <p>Simple UI for the COMP3011 Fitness API</p>
+        <header class="hero">
+            <div>
+                <p class="eyebrow">COMP3011 Fitness API</p>
+                <h1>Fitness Intelligence Dashboard</h1>
+                <p class="hero-text">
+                    A dashboard for workout logging, exercise exploration, recommendation, and analytics
+                    powered by the Fitness API.
+                </p>
+            </div>
         </header>
 
-        <section class="card">
-            <h2>Add Workout</h2>
-            <form id="workout-form">
-                <input
-                    id="type"
-                    type="text"
-                    placeholder="Workout type (Push / Legs / Run)"
-                    required
-                >
-
-                <input
-                    id="duration"
-                    type="number"
-                    placeholder="Duration (minutes)"
-                    min="1"
-                    required
-                >
-
-                <input
-                    id="date"
-                    type="date"
-                    required
-                >
-
-                <textarea
-                    id="notes"
-                    placeholder="Notes"
-                    rows="3"
-                ></textarea>
-
-                <button type="submit">Add Workout</button>
-            </form>
-
-            <p id="message"></p>
+        <section class="summary-grid">
+            <div class="summary-card">
+                <span class="summary-label">Current Streak</span>
+                <span class="summary-value" id="current">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Longest Streak</span>
+                <span class="summary-value" id="longest">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Workout Days</span>
+                <span class="summary-value" id="days">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Exercises in Dataset</span>
+                <span class="summary-value" id="total-exercises">0</span>
+            </div>
         </section>
 
         <section class="card">
-            <h2>Analytics</h2>
-            <div class="analytics">
-                <div class="stat-box">
-                    <h3>Current Streak</h3>
-                    <p id="current">0</p>
+            <div class="card-header">
+                <div>
+                    <h2>Add Workout</h2>
+                    <p class="section-text">Log a workout and attach the exact exercises, sets, reps, and weight used.</p>
+                </div>
+            </div>
+
+            <form id="workout-form" class="form-grid">
+                <div class="form-row two-cols">
+                    <input
+                        id="type"
+                        type="text"
+                        placeholder="Workout type (Push / Legs / Run)"
+                        required
+                    >
+
+                    <input
+                        id="duration"
+                        type="number"
+                        placeholder="Duration (minutes)"
+                        min="1"
+                        required
+                    >
                 </div>
 
-                <div class="stat-box">
-                    <h3>Longest Streak</h3>
-                    <p id="longest">0</p>
+                <div class="form-row two-cols">
+                    <input
+                        id="date"
+                        type="date"
+                        required
+                    >
+
+                    <textarea
+                        id="notes"
+                        placeholder="Notes"
+                        rows="3"
+                    ></textarea>
                 </div>
 
-                <div class="stat-box">
-                    <h3>Total Workout Days</h3>
-                    <p id="days">0</p>
+                <div class="exercise-builder">
+                    <div class="builder-header">
+                        <div>
+                            <h3>Workout Exercises</h3>
+                            <p class="section-text small-text">Add one or more exercises from the dataset to this workout.</p>
+                        </div>
+                        <button type="button" class="secondary-btn" onclick="addWorkoutExerciseRow()">Add Exercise Row</button>
+                    </div>
+
+                    <div id="workout-exercise-rows" class="workout-exercise-rows"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Add Workout</button>
+                </div>
+            </form>
+
+            <p id="message" class="message"></p>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Weekly Summary</h2>
+                    <p class="section-text">Live weekly workout totals from the analytics endpoints.</p>
+                </div>
+            </div>
+
+            <div id="weekly" class="weekly-summary"></div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Exercise Dataset Overview</h2>
+                    <p class="section-text">Quick metadata loaded from the API filter endpoint.</p>
+                </div>
+                <button type="button" onclick="loadExerciseMeta()">Refresh Metadata</button>
+            </div>
+
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <span class="mini-label">Body Parts</span>
+                    <span class="mini-value" id="meta-body-parts-count">0</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="mini-label">Equipment Types</span>
+                    <span class="mini-value" id="meta-equipment-count">0</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="mini-label">Difficulty Levels</span>
+                    <span class="mini-value" id="meta-difficulty-count">0</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="mini-label">Exercise Types</span>
+                    <span class="mini-value" id="meta-type-count">0</span>
                 </div>
             </div>
         </section>
 
         <section class="card">
-            <h2>Workout History</h2>
-            <button type="button" onclick="loadWorkouts()">Refresh</button>
-            <div id="workouts"></div>
-        </section>
+            <div class="card-header">
+                <div>
+                    <h2>Exercise Explorer</h2>
+                    <p class="section-text">Search, filter, and sort exercises from the imported dataset.</p>
+                </div>
+            </div>
 
-        <section class="card">
-            <h2>Weekly Summary</h2>
-            <div id="weekly"></div>
-        </section>
-
-        <section class="card">
-            <h2>Exercise Explorer</h2>
-        
-            <div class="filters">
+            <div class="filters-grid">
                 <input
                     id="exercise-q"
                     type="text"
                     placeholder="Search exercise (e.g. plank, bench press)"
                 >
-        
-                <input
-                    id="exercise-body-part"
-                    type="text"
-                    placeholder="Body part (e.g. Chest)"
-                >
-        
-                <input
-                    id="exercise-equipment"
-                    type="text"
-                    placeholder="Equipment (e.g. Dumbbell)"
-                >
-        
-                <input
-                    id="exercise-difficulty"
-                    type="text"
-                    placeholder="Difficulty (e.g. Beginner)"
-                >
-        
-                <input
-                    id="exercise-type"
-                    type="text"
-                    placeholder="Exercise type (e.g. Strength)"
-                >
-        
+
+                <select id="exercise-body-part">
+                    <option value="">All body parts</option>
+                </select>
+
+                <select id="exercise-equipment">
+                    <option value="">All equipment</option>
+                </select>
+
+                <select id="exercise-difficulty">
+                    <option value="">All difficulty levels</option>
+                </select>
+
+                <select id="exercise-type">
+                    <option value="">All exercise types</option>
+                </select>
+
                 <select id="exercise-sort">
                     <option value="recommended">Recommended</option>
                     <option value="rating_high_low">Rating: High to Low</option>
                     <option value="rating_low_high">Rating: Low to High</option>
                 </select>
-        
-                <button type="button" onclick="loadExercises()">Search Exercises</button>
             </div>
-        
-            <div id="exercises-results"></div>
+
+            <div class="toolbar">
+                <button type="button" onclick="loadExercises()">Search Exercises</button>
+                <button type="button" class="secondary-btn" onclick="resetExerciseFilters()">Reset Filters</button>
+            </div>
+
+            <div id="exercises-results" class="results-grid"></div>
+        </section>
+
+        <section class="two-column-grid">
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Recommended Exercises</h2>
+                        <p class="section-text">Recommendations based on your selected explorer filters.</p>
+                    </div>
+                    <button type="button" onclick="loadRecommendedExercises()">Load Recommendations</button>
+                </div>
+
+                <div id="recommended-results" class="results-grid compact-results"></div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Top Rated Exercises</h2>
+                        <p class="section-text">Highest rated exercises from the dataset.</p>
+                    </div>
+                    <button type="button" onclick="loadTopRatedExercises()">Refresh Top Rated</button>
+                </div>
+
+                <div id="top-rated-results" class="results-grid compact-results"></div>
+            </section>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Workout Plan Generator</h2>
+                    <p class="section-text">Generate a simple plan from the dataset using your preferences.</p>
+                </div>
+            </div>
+
+            <div class="filters-grid plan-grid">
+                <select id="plan-goal">
+                    <option value="strength">Strength</option>
+                    <option value="hypertrophy">Hypertrophy</option>
+                    <option value="general_fitness">General Fitness</option>
+                </select>
+
+                <select id="plan-days">
+                    <option value="3">3 Days</option>
+                    <option value="4">4 Days</option>
+                    <option value="5">5 Days</option>
+                </select>
+
+                <select id="plan-equipment">
+                    <option value="">Any Equipment</option>
+                </select>
+
+                <select id="plan-difficulty">
+                    <option value="">Any Difficulty</option>
+                </select>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" onclick="loadWorkoutPlan()">Generate Workout Plan</button>
+            </div>
+
+            <div id="plan-results" class="plan-results"></div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Workout History</h2>
+                    <p class="section-text">Previously logged workouts from the API.</p>
+                </div>
+                <button type="button" onclick="loadWorkouts()">Refresh</button>
+            </div>
+
+            <div id="workouts" class="history-list"></div>
         </section>
     </div>
 
