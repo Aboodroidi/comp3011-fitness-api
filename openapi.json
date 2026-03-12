@@ -1,1 +1,1584 @@
-{"openapi":"3.1.0","info":{"title":"Fitness API","version":"0.1.0"},"paths":{"/workouts":{"post":{"tags":["Workouts"],"summary":"Create Workout","operationId":"create_workout_workouts_post","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkoutCreate"}}}},"responses":{"201":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkoutOut"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"get":{"tags":["Workouts"],"summary":"List Workouts","operationId":"list_workouts_workouts_get","parameters":[{"name":"skip","in":"query","required":false,"schema":{"type":"integer","default":0,"title":"Skip"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","default":50,"title":"Limit"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/WorkoutOut"},"title":"Response List Workouts Workouts Get"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/workouts/{workout_id}":{"get":{"tags":["Workouts"],"summary":"Get Workout","operationId":"get_workout_workouts__workout_id__get","parameters":[{"name":"workout_id","in":"path","required":true,"schema":{"type":"integer","title":"Workout Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkoutOut"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"put":{"tags":["Workouts"],"summary":"Update Workout","operationId":"update_workout_workouts__workout_id__put","parameters":[{"name":"workout_id","in":"path","required":true,"schema":{"type":"integer","title":"Workout Id"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkoutUpdate"}}}},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/WorkoutOut"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}},"delete":{"tags":["Workouts"],"summary":"Delete Workout","operationId":"delete_workout_workouts__workout_id__delete","parameters":[{"name":"workout_id","in":"path","required":true,"schema":{"type":"integer","title":"Workout Id"}}],"responses":{"204":{"description":"Successful Response"},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/analytics/streak":{"get":{"tags":["Analytics"],"summary":"Workout Streak","description":"Calculates:\n- current_streak: consecutive days up to the most recent workout date\n- longest_streak: max consecutive-day run in the dataset","operationId":"workout_streak_analytics_streak_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/analytics/weekly-summary":{"get":{"tags":["Analytics"],"summary":"Weekly Summary","description":"Returns totals for workouts whose date is in [week_start, week_start+6].","operationId":"weekly_summary_analytics_weekly_summary_get","parameters":[{"name":"week_start","in":"query","required":true,"schema":{"type":"string","description":"Week start date (YYYY-MM-DD). Monday recommended.","title":"Week Start"},"description":"Week start date (YYYY-MM-DD). Monday recommended."}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/exercises":{"get":{"tags":["Exercises"],"summary":"List Exercises","operationId":"list_exercises_exercises_get","parameters":[{"name":"q","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"description":"Search in exercise name","title":"Q"},"description":"Search in exercise name"},{"name":"body_part","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Body Part"}},{"name":"equipment","in":"query","required":false,"schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Equipment"}},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","maximum":200,"minimum":1,"default":50,"title":"Limit"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/ExerciseOut"},"title":"Response List Exercises Exercises Get"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/health":{"get":{"summary":"Health","operationId":"health_health_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}}},"components":{"schemas":{"ExerciseOut":{"properties":{"id":{"type":"integer","title":"Id"},"name":{"type":"string","title":"Name"},"body_part":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Body Part"},"equipment":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Equipment"},"target_muscle":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Target Muscle"},"difficulty":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Difficulty"},"description":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Description"}},"type":"object","required":["id","name"],"title":"ExerciseOut"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"},"input":{"title":"Input"},"ctx":{"type":"object","title":"Context"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"},"WorkoutCreate":{"properties":{"date":{"type":"string","title":"Date","description":"YYYY-MM-DD","examples":["2026-02-17"]},"workout_type":{"type":"string","title":"Workout Type","examples":["Push","Pull","Legs","Cardio"]},"duration_min":{"type":"integer","maximum":600.0,"minimum":1.0,"title":"Duration Min"},"notes":{"anyOf":[{"type":"string","maxLength":300},{"type":"null"}],"title":"Notes"}},"type":"object","required":["date","workout_type","duration_min"],"title":"WorkoutCreate"},"WorkoutOut":{"properties":{"date":{"type":"string","title":"Date","description":"YYYY-MM-DD","examples":["2026-02-17"]},"workout_type":{"type":"string","title":"Workout Type","examples":["Push","Pull","Legs","Cardio"]},"duration_min":{"type":"integer","maximum":600.0,"minimum":1.0,"title":"Duration Min"},"notes":{"anyOf":[{"type":"string","maxLength":300},{"type":"null"}],"title":"Notes"},"id":{"type":"integer","title":"Id"}},"type":"object","required":["date","workout_type","duration_min","id"],"title":"WorkoutOut"},"WorkoutUpdate":{"properties":{"date":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Date","examples":["2026-02-17"]},"workout_type":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Workout Type"},"duration_min":{"anyOf":[{"type":"integer","maximum":600.0,"minimum":1.0},{"type":"null"}],"title":"Duration Min"},"notes":{"anyOf":[{"type":"string","maxLength":300},{"type":"null"}],"title":"Notes"}},"type":"object","title":"WorkoutUpdate"}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "COMP3011 Fitness API",
+    "description": "Fitness tracking API with exercise search and workout analytics.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/workouts": {
+      "post": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "Create Workout",
+        "description": "Create a new workout record.",
+        "operationId": "create_workout_workouts_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "List Workouts",
+        "description": "Retrieve a list of workout records with optional pagination.",
+        "operationId": "list_workouts_workouts_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of records to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkoutOut"
+                  },
+                  "title": "Response List Workouts Workouts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts/suggest-plan": {
+      "get": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "Suggest a workout plan",
+        "description": "Returns a simple workout plan using the exercise dataset based on goal, number of training days, equipment, and difficulty.",
+        "operationId": "suggest_workout_plan_workouts_suggest_plan_get",
+        "parameters": [
+          {
+            "name": "goal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Training goal: strength, hypertrophy, or general_fitness",
+              "default": "strength",
+              "title": "Goal"
+            },
+            "description": "Training goal: strength, hypertrophy, or general_fitness"
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5,
+              "minimum": 3,
+              "description": "Number of training days per week",
+              "default": 3,
+              "title": "Days"
+            },
+            "description": "Number of training days per week"
+          },
+          {
+            "name": "equipment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Preferred equipment",
+              "title": "Equipment"
+            },
+            "description": "Preferred equipment"
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Preferred difficulty level",
+              "title": "Difficulty"
+            },
+            "description": "Preferred difficulty level"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts/{workout_id}": {
+      "get": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "Get Workout",
+        "description": "Retrieve a specific workout using its unique ID.",
+        "operationId": "get_workout_workouts__workout_id__get",
+        "parameters": [
+          {
+            "name": "workout_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Workout Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workout not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Workout not found"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "Update Workout",
+        "description": "Update an existing workout entry using its unique ID.",
+        "operationId": "update_workout_workouts__workout_id__put",
+        "parameters": [
+          {
+            "name": "workout_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Workout Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workout not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Workout not found"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Workouts"
+        ],
+        "summary": "Delete Workout",
+        "description": "Delete a workout entry using its unique ID.",
+        "operationId": "delete_workout_workouts__workout_id__delete",
+        "parameters": [
+          {
+            "name": "workout_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Workout Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Workout not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Workout not found"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/streak": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get workout streak statistics",
+        "description": "Returns the current streak, longest streak, and total workout days.",
+        "operationId": "get_workout_streak_analytics_streak_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/weekly-summary": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get weekly workout summary",
+        "description": "Returns workout totals and distribution for a given week.",
+        "operationId": "get_weekly_summary_analytics_weekly_summary_get",
+        "parameters": [
+          {
+            "name": "week_start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Start date of the week in YYYY-MM-DD format",
+              "title": "Week Start"
+            },
+            "description": "Start date of the week in YYYY-MM-DD format"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/exercise-distribution/body-part": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Exercise distribution by body part",
+        "description": "Returns the number of exercises available for each body part in the exercise dataset.",
+        "operationId": "exercise_distribution_by_body_part_analytics_exercise_distribution_body_part_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseDistributionItem"
+                  },
+                  "type": "array",
+                  "title": "Response Exercise Distribution By Body Part Analytics Exercise Distribution Body Part Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/exercise-distribution/equipment": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Exercise distribution by equipment",
+        "description": "Returns the number of exercises available for each equipment type in the exercise dataset.",
+        "operationId": "exercise_distribution_by_equipment_analytics_exercise_distribution_equipment_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseDistributionItem"
+                  },
+                  "type": "array",
+                  "title": "Response Exercise Distribution By Equipment Analytics Exercise Distribution Equipment Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/top-rated-exercises": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Top rated exercises",
+        "description": "Returns the highest-rated exercises from the dataset, with optional filtering.",
+        "operationId": "top_rated_exercises_analytics_top_rated_exercises_get",
+        "parameters": [
+          {
+            "name": "body_part",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by body part",
+              "title": "Body Part"
+            },
+            "description": "Filter by body part"
+          },
+          {
+            "name": "equipment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by equipment",
+              "title": "Equipment"
+            },
+            "description": "Filter by equipment"
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by difficulty",
+              "title": "Difficulty"
+            },
+            "description": "Filter by difficulty"
+          },
+          {
+            "name": "exercise_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by exercise type",
+              "title": "Exercise Type"
+            },
+            "description": "Filter by exercise type"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Maximum number of exercises to return",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "Maximum number of exercises to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseOut"
+                  },
+                  "title": "Response Top Rated Exercises Analytics Top Rated Exercises Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exercises/meta/filters": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "summary": "Get available exercise filters",
+        "description": "Returns available body parts, equipment types, difficulty levels, exercise types, and total exercise count.",
+        "operationId": "get_exercise_filters_exercises_meta_filters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExerciseFiltersOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exercises/recommend": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "summary": "Recommend exercises",
+        "description": "Returns recommended exercises based on filters such as body part, equipment, difficulty, and exercise type.",
+        "operationId": "recommend_exercise_list_exercises_recommend_get",
+        "parameters": [
+          {
+            "name": "body_part",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by body part",
+              "title": "Body Part"
+            },
+            "description": "Filter by body part"
+          },
+          {
+            "name": "equipment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by equipment",
+              "title": "Equipment"
+            },
+            "description": "Filter by equipment"
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by difficulty",
+              "title": "Difficulty"
+            },
+            "description": "Filter by difficulty"
+          },
+          {
+            "name": "exercise_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by exercise type",
+              "title": "Exercise Type"
+            },
+            "description": "Filter by exercise type"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "description": "Maximum number of recommended exercises",
+              "default": 5,
+              "title": "Limit"
+            },
+            "description": "Maximum number of recommended exercises"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseOut"
+                  },
+                  "title": "Response Recommend Exercise List Exercises Recommend Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exercises/{exercise_id}": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "summary": "Get exercise by ID",
+        "description": "Retrieve a single exercise record by its unique identifier.",
+        "operationId": "get_exercise_exercises__exercise_id__get",
+        "parameters": [
+          {
+            "name": "exercise_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Exercise Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExerciseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exercises": {
+      "get": {
+        "tags": [
+          "Exercises"
+        ],
+        "summary": "List exercises",
+        "description": "Search and filter exercises from the gym dataset.",
+        "operationId": "list_exercises_exercises_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by exercise name or description",
+              "title": "Q"
+            },
+            "description": "Search by exercise name or description"
+          },
+          {
+            "name": "body_part",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by body part",
+              "title": "Body Part"
+            },
+            "description": "Filter by body part"
+          },
+          {
+            "name": "equipment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by equipment",
+              "title": "Equipment"
+            },
+            "description": "Filter by equipment"
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by difficulty level",
+              "title": "Difficulty"
+            },
+            "description": "Filter by difficulty level"
+          },
+          {
+            "name": "exercise_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by exercise type",
+              "title": "Exercise Type"
+            },
+            "description": "Filter by exercise type"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Sort results: recommended, rating_low_high, rating_high_low",
+              "default": "recommended",
+              "title": "Sort By"
+            },
+            "description": "Sort results: recommended, rating_low_high, rating_high_low"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of exercises to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of exercises to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseOut"
+                  },
+                  "title": "Response List Exercises Exercises Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Dashboard",
+        "operationId": "dashboard__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health check",
+        "description": "Verify that the API is running.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ExerciseDistributionItem": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "count"
+        ],
+        "title": "ExerciseDistributionItem"
+      },
+      "ExerciseFiltersOut": {
+        "properties": {
+          "body_parts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Body Parts"
+          },
+          "equipment": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Equipment"
+          },
+          "difficulty": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Difficulty"
+          },
+          "exercise_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Exercise Types"
+          },
+          "total_exercises": {
+            "type": "integer",
+            "title": "Total Exercises"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body_parts",
+          "equipment",
+          "difficulty",
+          "exercise_types",
+          "total_exercises"
+        ],
+        "title": "ExerciseFiltersOut"
+      },
+      "ExerciseOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "body_part": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Part"
+          },
+          "equipment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipment"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty"
+          },
+          "exercise_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exercise Type"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "rating_desc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating Desc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ExerciseOut",
+        "example": {
+          "body_part": "Abdominals",
+          "description": "A core exercise targeting the abdominal muscles.",
+          "difficulty": "Beginner",
+          "equipment": "Body Only",
+          "exercise_type": "Strength",
+          "id": 1,
+          "name": "Crunch",
+          "rating": 8.9,
+          "rating_desc": "Highly effective for core activation."
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorkoutCreate": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "workout_type": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Workout Type"
+          },
+          "duration_min": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 1.0,
+            "title": "Duration Min"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/WorkoutExerciseCreate"
+            },
+            "type": "array",
+            "title": "Exercises"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "workout_type",
+          "duration_min"
+        ],
+        "title": "WorkoutCreate",
+        "example": {
+          "date": "2026-03-09",
+          "duration_min": 60,
+          "exercises": [
+            {
+              "exercise_id": 1,
+              "reps": 10,
+              "sets": 4,
+              "weight_kg": 60
+            }
+          ],
+          "notes": "Chest and shoulders session",
+          "workout_type": "Push"
+        }
+      },
+      "WorkoutExerciseCreate": {
+        "properties": {
+          "exercise_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Exercise Id"
+          },
+          "sets": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Sets"
+          },
+          "reps": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Reps"
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exercise_id",
+          "sets",
+          "reps"
+        ],
+        "title": "WorkoutExerciseCreate",
+        "example": {
+          "exercise_id": 1,
+          "reps": 10,
+          "sets": 4,
+          "weight_kg": 60
+        }
+      },
+      "WorkoutExerciseOut": {
+        "properties": {
+          "exercise_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Exercise Id"
+          },
+          "sets": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Sets"
+          },
+          "reps": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Reps"
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Kg"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "exercise_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exercise Name"
+          },
+          "body_part": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Part"
+          },
+          "equipment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exercise_id",
+          "sets",
+          "reps",
+          "id"
+        ],
+        "title": "WorkoutExerciseOut",
+        "example": {
+          "body_part": "Chest",
+          "equipment": "Barbell",
+          "exercise_id": 1,
+          "exercise_name": "Bench Press",
+          "id": 1,
+          "reps": 10,
+          "sets": 4,
+          "weight_kg": 60
+        }
+      },
+      "WorkoutOut": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "workout_type": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Workout Type"
+          },
+          "duration_min": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 1.0,
+            "title": "Duration Min"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/WorkoutExerciseOut"
+            },
+            "type": "array",
+            "title": "Exercises"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "workout_type",
+          "duration_min",
+          "id"
+        ],
+        "title": "WorkoutOut",
+        "example": {
+          "date": "2026-03-09",
+          "duration_min": 60,
+          "exercises": [
+            {
+              "body_part": "Chest",
+              "equipment": "Barbell",
+              "exercise_id": 1,
+              "exercise_name": "Bench Press",
+              "id": 1,
+              "reps": 10,
+              "sets": 4,
+              "weight_kg": 60
+            }
+          ],
+          "id": 1,
+          "notes": "Chest and shoulders session",
+          "workout_type": "Push"
+        }
+      },
+      "WorkoutUpdate": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "workout_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workout Type"
+          },
+          "duration_min": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 600.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Min"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "exercises": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/WorkoutExerciseCreate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exercises"
+          }
+        },
+        "type": "object",
+        "title": "WorkoutUpdate",
+        "example": {
+          "date": "2026-03-10",
+          "duration_min": 45,
+          "exercises": [
+            {
+              "exercise_id": 2,
+              "reps": 12,
+              "sets": 3,
+              "weight_kg": 25
+            }
+          ],
+          "notes": "Back and biceps session",
+          "workout_type": "Pull"
+        }
+      }
+    }
+  }
+}
