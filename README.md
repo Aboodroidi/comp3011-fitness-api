@@ -1,18 +1,20 @@
 # COMP3011 Fitness API
 
-A RESTful **Workout Logging and Fitness Analytics API** built using **FastAPI** and **SQLite**.
+A RESTful **Workout Logging and Fitness Intelligence API** built using **FastAPI** and **SQLite**.
 
-The system allows users to log workouts, track training history, explore a large dataset of gym exercises, and generate simple analytics such as workout streaks and weekly summaries.
+The system allows users to log workouts, track training history, explore a large dataset of gym exercises, generate workout plans, and derive training analytics such as workout streaks and weekly summaries.
 
-This project demonstrates core web services concepts including:
+This project demonstrates key **Web Services and Web Data concepts**, including:
 
 - RESTful API design
-- database integration
-- automated testing
+- database integration with SQLAlchemy
+- automated API testing
 - OpenAPI documentation
+- dataset-driven APIs
 - cloud deployment
+- interactive frontend dashboard
 
-The API exposes endpoints for managing workout logs and searching a dataset of gym exercises with filtering and sorting capabilities.
+The API supports **workout tracking with exercise-level logging**, meaning users can record the **sets, reps, and weight for each exercise performed in a workout session**.
 
 This project was developed for the **COMP3011 – Web Services and Web Data** module at the **University of Leeds**.
 
@@ -35,30 +37,79 @@ https://aboodroid.pythonanywhere.com/redoc
 
 ## Workout Logging
 
+The API provides full CRUD functionality for workout sessions.
+
+Supported operations:
+
 • Create workout sessions  
 • Retrieve workout history  
 • Update workout entries  
 • Delete workout logs  
 
-All operations follow RESTful conventions with appropriate HTTP status codes.
+Each workout can include **multiple exercises**, allowing detailed tracking of:
+
+• exercise used  
+• number of sets  
+• repetitions  
+• weight lifted (kg)
+
+Example workout structure:
+
+```
+{
+  "date": "2026-03-01",
+  "workout_type": "Push",
+  "duration_min": 60,
+  "notes": "Chest session",
+  "exercises": [
+    {
+      "exercise_id": 1,
+      "sets": 4,
+      "reps": 10,
+      "weight_kg": 60
+    }
+  ]
+}
+```
+
+All operations follow **RESTful conventions** with appropriate HTTP status codes.
 
 ---
 
 ## Fitness Analytics
 
-The API provides simple analytics derived from the workout history:
+The API provides several analytics endpoints derived from the workout history.
+
+Available analytics include:
 
 • **Workout streak tracking**  
 • **Weekly workout summaries**  
-• **Workout distribution by type**
+• **Workout distribution by type**  
+• **Top rated exercises from the dataset**
 
-These endpoints demonstrate how stored workout data can be used to generate useful insights.
+These endpoints demonstrate how stored workout data can be transformed into meaningful insights.
+
+Example:
+
+```
+GET /analytics/streak
+```
+
+Response:
+
+```
+{
+  "current_streak": 3,
+  "longest_streak": 5,
+  "total_workout_days": 12
+}
+```
 
 ---
 
 ## Exercise Dataset Search
 
-The API integrates a gym exercise dataset allowing users to explore available exercises.
+The API integrates a large **gym exercise dataset** allowing users to explore available exercises.
 
 Supported capabilities include:
 
@@ -74,15 +125,75 @@ Example queries:
 
 Search exercises
 
+```
 GET /exercises?q=bench
+```
 
 Filter exercises by body part
 
+```
 GET /exercises?body_part=Chest
+```
 
-Sort exercises by rating (highest first)
+Sort exercises by rating
 
+```
 GET /exercises?sort_by=rating_high_low
+```
+
+---
+
+## Exercise Recommendations
+
+The API includes a **recommendation endpoint** that returns exercises based on selected filters such as:
+
+• body part  
+• equipment  
+• difficulty  
+• exercise type  
+
+Example:
+
+```
+GET /exercises/recommend?body_part=Chest&difficulty=Beginner
+```
+
+---
+
+## Workout Plan Generator
+
+The API can generate a **simple multi-day workout plan** using the exercise dataset.
+
+Plans can be customized based on:
+
+• training goal  
+• number of training days  
+• equipment availability  
+• difficulty level
+
+Example:
+
+```
+GET /workouts/suggest-plan?goal=hypertrophy&days=4
+```
+
+---
+
+# Interactive Dashboard
+
+The project also includes a **frontend dashboard** which interacts with the API.
+
+The dashboard allows users to:
+
+• log workouts through a form interface  
+• select exercises from the dataset  
+• record sets, reps, and weights  
+• browse exercises  
+• view recommendations  
+• generate workout plans  
+• view workout analytics and summaries  
+
+The UI communicates directly with the REST API endpoints.
 
 ---
 
@@ -97,12 +208,18 @@ Backend
 
 Testing
 
-• Pytest  
+• Pytest (32 automated tests)
 
 Deployment
 
 • Uvicorn  
 • PythonAnywhere  
+
+Frontend
+
+• HTML  
+• CSS  
+• JavaScript (Fetch API)
 
 ---
 
@@ -112,22 +229,29 @@ Deployment
 comp3011-fitness-api
 │
 ├── app
-│   ├── main.py                 # FastAPI application entry point
-│   ├── db.py                   # Database configuration
-│   ├── models.py               # Workout database models
-│   ├── models_exercises.py     # Exercise dataset models
-│   ├── schemas.py              # Pydantic validation schemas
+│   ├── main.py
+│   ├── db.py
+│   ├── models.py
+│   ├── models_exercises.py
+│   ├── schemas.py
 │   │
 │   └── routers
-│       ├── workouts.py         # Workout CRUD endpoints
-│       ├── analytics.py        # Analytics endpoints
-│       └── exercises.py        # Exercise dataset search API
+│       ├── workouts.py
+│       ├── analytics.py
+│       └── exercises.py
 │
 ├── data
-│   └── gym_exercises.csv       # Exercise dataset
+│   └── gym_exercises.csv
 │
 ├── scripts
-│   └── seed_exercises.py       # Script to load exercise dataset
+│   └── seed_exercises.py
+│
+├── static
+│   ├── styles.css
+│   └── app.js
+│
+├── templates
+│   └── index.html
 │
 ├── tests
 │   ├── conftest.py
@@ -180,8 +304,6 @@ Seed the exercise dataset
 python -m scripts.seed_exercises
 ```
 
-This loads the gym exercise dataset used by the `/exercises` endpoint.
-
 ---
 
 # Run the API
@@ -192,13 +314,13 @@ Start the server
 uvicorn app.main:app --reload
 ```
 
-The API will be available at
+The API will be available at:
 
 ```
 http://127.0.0.1:8000
 ```
 
-Swagger documentation
+Swagger documentation:
 
 ```
 http://127.0.0.1:8000/docs
@@ -206,64 +328,11 @@ http://127.0.0.1:8000/docs
 
 ---
 
-# Example Endpoints
-
-Create Workout
-
-POST /workouts
-
-Example request body
-
-```
-{
-  "date": "2026-03-01",
-  "workout_type": "Push",
-  "duration_min": 60,
-  "notes": "Chest workout"
-}
-```
-
----
-
-Retrieve Workout
-
-GET /workouts/{workout_id}
-
----
-
-Workout Streak
-
-GET /analytics/streak
-
-Example response
-
-```
-{
-  "current_streak": 3,
-  "longest_streak": 5,
-  "total_workout_days": 12
-}
-```
-
----
-
-Weekly Summary
-
-GET /analytics/weekly-summary?week_start=2026-03-01
-
-Returns:
-
-• total sessions  
-• total minutes  
-• distribution of workout types  
-
----
-
 # Testing
 
 Automated tests are implemented using **pytest**.
 
-Run the full test suite
+Run the full test suite:
 
 ```
 pytest
@@ -271,13 +340,14 @@ pytest
 
 The tests cover:
 
-• Workout CRUD endpoints  
-• Error handling (404 and validation errors)  
-• Analytics calculations  
-• Exercise search and filtering  
-• Sorting functionality  
+• workout CRUD endpoints  
+• nested exercise logging  
+• error handling and validation  
+• analytics calculations  
+• exercise search and filtering  
+• sorting and recommendation logic  
 
-Tests use a **separate test database** to ensure isolation from production data.
+The tests use a **separate test database** to ensure isolation from production data.
 
 ---
 
@@ -287,14 +357,13 @@ The exercise dataset used in this project was obtained from Kaggle:
 
 https://www.kaggle.com/datasets/niharika41298/gym-exercise-data
 
-The dataset includes information such as:
+The dataset contains information including:
 
 • exercise name  
 • equipment used  
 • target muscle group  
 • difficulty level  
 • exercise description  
-• exercise images  
 
 The dataset is stored locally as:
 
@@ -302,7 +371,7 @@ The dataset is stored locally as:
 data/gym_exercises.csv
 ```
 
-and is loaded into the SQLite database using the seeding script.
+and loaded into the SQLite database using the provided seeding script.
 
 ---
 
@@ -310,7 +379,7 @@ and is loaded into the SQLite database using the seeding script.
 
 The API is deployed on **PythonAnywhere** using Uvicorn.
 
-Live deployment
+Live deployment:
 
 https://aboodroid.pythonanywhere.com
 
@@ -319,6 +388,7 @@ The deployed API includes:
 • public REST endpoints  
 • interactive Swagger documentation  
 • ReDoc documentation  
+• interactive dashboard UI  
 
 ---
 
@@ -331,11 +401,11 @@ Generative AI tools were used during development to assist with:
 • refining test structures  
 • improving documentation clarity  
 
-AI suggestions were treated as starting points and were carefully reviewed and modified before being integrated into the final system.
+AI suggestions were treated as **starting points only** and were carefully reviewed, modified, and tested before inclusion in the final system.
 
-All generated code and ideas were manually verified and tested before inclusion.
+All generated outputs were manually validated to ensure correctness and compliance with coursework requirements.
 
-Examples of AI interaction logs are included in the coursework submission as required by the module guidelines.
+Examples of AI interaction logs are included in the coursework submission as supplementary material, in accordance with the module guidelines.
 
 ---
 
