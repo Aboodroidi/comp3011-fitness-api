@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Make sure "app" can be imported
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -15,7 +14,6 @@ from app.db import Base, get_db
 from app.main import app as fastapi_app
 import app.models
 import app.models_exercises
-
 
 TEST_DB_PATH = Path("test_fitness.db")
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{TEST_DB_PATH}"
@@ -79,3 +77,27 @@ def client():
         yield test_client
 
     fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def auth_user(client):
+    payload = {
+        "username": "testuser",
+        "email": "testuser@example.com",
+        "password": "StrongPass123"
+    }
+    response = client.post("/auth/register", json=payload)
+    assert response.status_code == 201
+    return response.json()
+
+
+@pytest.fixture()
+def auth_headers(client, auth_user):
+    login_payload = {
+        "username": "testuser",
+        "password": "StrongPass123"
+    }
+    response = client.post("/auth/login", json=login_payload)
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

@@ -1,7 +1,68 @@
 from datetime import date as dt_date
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+
+class UserRegister(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "username": "abdullah",
+                "email": "abdullah@example.com",
+                "password": "StrongPass123"
+            }
+        }
+    )
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "username": "abdullah",
+                "password": "StrongPass123"
+            }
+        }
+    )
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "username": "abdullah",
+                "email": "abdullah@example.com"
+            }
+        }
+    )
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "access_token": "eyJ1c2VyX2lkIjoxLCJleHAiOjE3MDAwMDAwMDB9.signature",
+                "token_type": "bearer"
+            }
+        }
+    )
 
 
 class WorkoutExerciseBase(BaseModel):

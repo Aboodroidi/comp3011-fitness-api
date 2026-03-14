@@ -1,40 +1,29 @@
 from fastapi import FastAPI
+from fastapi.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.requests import Request
 
 from app.db import Base, engine
-from app.routers import workouts
-from app.routers import analytics
-from app.routers import exercises
+from app.routers import analytics, exercises, workouts
+from app.routers import auth
 
-
-# Create database tables
 Base.metadata.create_all(bind=engine)
-
 
 app = FastAPI(
     title="COMP3011 Fitness API",
-    description="Fitness tracking API with exercise search and workout analytics.",
-    version="1.0.0"
+    description="Fitness tracking API with authentication, exercise search, and workout analytics.",
+    version="1.1.0",
 )
 
-
-# Static files (CSS / JS)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-
-# Templates (UI)
 templates = Jinja2Templates(directory="app/templates")
 
-
-# Routers
+app.include_router(auth.router)
 app.include_router(workouts.router)
 app.include_router(analytics.router)
 app.include_router(exercises.router)
 
 
-# UI Dashboard
 @app.get("/", tags=["UI"])
 def dashboard(request: Request):
     return templates.TemplateResponse(
@@ -43,7 +32,6 @@ def dashboard(request: Request):
     )
 
 
-# Health check endpoint
 @app.get(
     "/health",
     tags=["System"],

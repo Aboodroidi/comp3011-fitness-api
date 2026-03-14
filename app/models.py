@@ -8,14 +8,32 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .db import Base
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+
+    workouts: Mapped[list["WorkoutLog"]] = relationship(
+        "WorkoutLog",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+    )
+
+
 class WorkoutLog(Base):
     __tablename__ = "workout_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     date: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD
     workout_type: Mapped[str] = mapped_column(String(50), index=True)
     duration_min: Mapped[int] = mapped_column(Integer)
     notes: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+
+    owner: Mapped["User"] = relationship("User", back_populates="workouts")
 
     exercises: Mapped[list["WorkoutExercise"]] = relationship(
         "WorkoutExercise",

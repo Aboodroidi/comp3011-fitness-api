@@ -11,7 +11,7 @@ def test_workout_streak_empty_database(client):
     assert "total_workout_days" in data
 
 
-def test_workout_streak_with_data(client):
+def test_workout_streak_with_data(client, auth_headers):
     workouts = [
         {
             "date": "2026-03-01",
@@ -34,7 +34,7 @@ def test_workout_streak_with_data(client):
     ]
 
     for workout in workouts:
-        client.post("/workouts", json=workout)
+        client.post("/workouts", json=workout, headers=auth_headers)
 
     response = client.get("/analytics/streak")
 
@@ -51,7 +51,7 @@ def test_weekly_summary_requires_week_start(client):
     assert response.status_code == 422
 
 
-def test_weekly_summary_returns_expected_shape(client):
+def test_weekly_summary_returns_expected_shape(client, auth_headers):
     workouts = [
         {
             "date": "2026-03-01",
@@ -68,7 +68,7 @@ def test_weekly_summary_returns_expected_shape(client):
     ]
 
     for workout in workouts:
-        client.post("/workouts", json=workout)
+        client.post("/workouts", json=workout, headers=auth_headers)
 
     response = client.get("/analytics/weekly-summary?week_start=2026-03-01")
 
