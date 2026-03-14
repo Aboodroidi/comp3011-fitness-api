@@ -70,7 +70,10 @@ POST /auth/login
 
 Example login response
 
-POST /auth/login
+{
+  "access_token": "...",
+  "token_type": "bearer"
+}
 
 {
   "username": "john",
