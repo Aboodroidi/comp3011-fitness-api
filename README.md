@@ -2,7 +2,7 @@
 
 A RESTful **Workout Logging and Fitness Intelligence API** built using **FastAPI** and **SQLite**.
 
-The system allows users to log workouts, track training history, explore a large dataset of gym exercises, generate workout plans, and derive training analytics such as workout streaks and weekly summaries.
+The system allows users to register and authenticate, log workouts, track training history, explore a large dataset of gym exercises, generate workout plans, and derive training analytics such as workout streaks and weekly summaries.
 
 This project demonstrates key **Web Services and Web Data concepts**, including:
 
@@ -11,6 +11,7 @@ This project demonstrates key **Web Services and Web Data concepts**, including:
 - automated API testing
 - OpenAPI documentation
 - dataset-driven APIs
+- authentication and authorization
 - cloud deployment
 - interactive frontend dashboard
 
@@ -35,9 +36,54 @@ https://aboodroid.pythonanywhere.com/redoc
 
 # Features
 
+## User Authentication
+
+The API supports **user authentication and authorization**, allowing multiple users to securely manage their own workout data.
+
+Supported capabilities include:
+
+• user registration  
+• user login  
+• token-based authentication  
+• protected workout endpoints  
+• user-specific workout access  
+
+Example registration request
+
+```json
+POST /auth/register
+
+{
+  "username": "john",
+  "email": "john@example.com",
+  "password": "StrongPass123"
+}
+
+Example Login request 
+
+POST /auth/login
+
+{
+  "username": "john",
+  "password": "StrongPass123"
+}
+
+Example login response
+
+POST /auth/login
+
+{
+  "username": "john",
+  "password": "StrongPass123"
+}
+
+Authenticated requests to protected endpoints must include:
+
+Authorization: Bearer <token>
+
 ## Workout Logging
 
-The API provides full CRUD functionality for workout sessions.
+The API provides full authenticated CRUD functionality for workout sessions.
 
 Supported operations:
 
@@ -185,6 +231,7 @@ The project also includes a **frontend dashboard** which interacts with the API.
 
 The dashboard allows users to:
 
+• register and log in through the interface  
 • log workouts through a form interface  
 • select exercises from the dataset  
 • record sets, reps, and weights  
@@ -205,10 +252,12 @@ Backend
 • FastAPI  
 • SQLAlchemy  
 • SQLite  
+• token-based authentication  
+• password hashing  
 
 Testing
 
-• Pytest (32 automated tests)
+• Pytest (38 automated tests)
 
 Deployment
 
@@ -234,12 +283,13 @@ comp3011-fitness-api
 │   ├── models.py
 │   ├── models_exercises.py
 │   ├── schemas.py
+│   ├── security.py
 │   │
 │   └── routers
+│       ├── auth.py
 │       ├── workouts.py
 │       ├── analytics.py
 │       └── exercises.py
-│
 ├── data
 │   └── gym_exercises.csv
 │
@@ -340,8 +390,10 @@ pytest
 
 The tests cover:
 
-• workout CRUD endpoints  
+• user registration and login  
+• protected workout CRUD endpoints  
 • nested exercise logging  
+• user-specific data access control  
 • error handling and validation  
 • analytics calculations  
 • exercise search and filtering  
@@ -350,6 +402,20 @@ The tests cover:
 The tests use a **separate test database** to ensure isolation from production data.
 
 ---
+
+# Security
+
+The API now includes **token-based authentication** for protected workout operations.
+
+Security-related features include:
+
+• user registration and login  
+• password hashing before storage  
+• protected workout endpoints  
+• user-specific authorization checks  
+
+This ensures that each authenticated user can only access and modify their own workout records.
+
 
 # Dataset
 
@@ -385,10 +451,11 @@ https://aboodroid.pythonanywhere.com
 
 The deployed API includes:
 
-• public REST endpoints  
+• public and protected REST endpoints  
 • interactive Swagger documentation  
 • ReDoc documentation  
 • interactive dashboard UI  
+• authenticated multi-user workout access   
 
 ---
 

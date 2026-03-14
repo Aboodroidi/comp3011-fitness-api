@@ -2,18 +2,105 @@
   "openapi": "3.1.0",
   "info": {
     "title": "COMP3011 Fitness API",
-    "description": "Fitness tracking API with exercise search and workout analytics.",
-    "version": "1.0.0"
+    "description": "Fitness tracking API with authentication, exercise search, and workout analytics.",
+    "version": "1.1.0"
   },
   "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a new user",
+        "operationId": "register_user_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegister"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login and receive an access token",
+        "operationId": "login_user_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/workouts": {
       "post": {
         "tags": [
           "Workouts"
         ],
         "summary": "Create Workout",
-        "description": "Create a new workout record.",
+        "description": "Create a new workout record for the authenticated user.",
         "operationId": "create_workout_workouts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -52,8 +139,13 @@
           "Workouts"
         ],
         "summary": "List Workouts",
-        "description": "Retrieve a list of workout records with optional pagination.",
+        "description": "Retrieve workout records belonging to the authenticated user.",
         "operationId": "list_workouts_workouts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "skip",
@@ -211,8 +303,13 @@
           "Workouts"
         ],
         "summary": "Get Workout",
-        "description": "Retrieve a specific workout using its unique ID.",
+        "description": "Retrieve a specific workout owned by the authenticated user.",
         "operationId": "get_workout_workouts__workout_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "workout_id",
@@ -262,8 +359,13 @@
           "Workouts"
         ],
         "summary": "Update Workout",
-        "description": "Update an existing workout entry using its unique ID.",
+        "description": "Update an existing workout entry owned by the authenticated user.",
         "operationId": "update_workout_workouts__workout_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "workout_id",
@@ -323,8 +425,13 @@
           "Workouts"
         ],
         "summary": "Delete Workout",
-        "description": "Delete a workout entry using its unique ID.",
+        "description": "Delete a workout entry owned by the authenticated user.",
         "operationId": "delete_workout_workouts__workout_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "workout_id",
@@ -1190,6 +1297,112 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "TokenOut": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "title": "TokenOut",
+        "example": {
+          "access_token": "eyJ1c2VyX2lkIjoxLCJleHAiOjE3MDAwMDAwMDB9.signature",
+          "token_type": "bearer"
+        }
+      },
+      "UserLogin": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "UserLogin",
+        "example": {
+          "password": "StrongPass123",
+          "username": "abdullah"
+        }
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "email"
+        ],
+        "title": "UserOut",
+        "example": {
+          "email": "abdullah@example.com",
+          "id": 1,
+          "username": "abdullah"
+        }
+      },
+      "UserRegister": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "UserRegister",
+        "example": {
+          "email": "abdullah@example.com",
+          "password": "StrongPass123",
+          "username": "abdullah"
+        }
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -1578,6 +1791,12 @@
           "notes": "Back and biceps session",
           "workout_type": "Pull"
         }
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   }
