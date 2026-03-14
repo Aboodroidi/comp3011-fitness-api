@@ -6,6 +6,9 @@ let exerciseMetaCache = {
     total_exercises: 0
 };
 
+const AUTH_STORAGE_KEY = "fitness_api_token";
+const AUTH_USER_KEY = "fitness_api_username";
+
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("workout-form");
 
@@ -18,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function initializeDashboard() {
+    updateAuthStatusUI();
+
     await Promise.all([
         loadWorkouts(),
         loadAnalytics(),
@@ -27,6 +32,180 @@ async function initializeDashboard() {
     ]);
 
     ensureAtLeastOneWorkoutExerciseRow();
+}
+
+function getAuthToken() {
+    return localStorage.getItem(AUTH_STORAGE_KEY);
+}
+
+function getAuthUsername() {
+    return localStorage.getItem(AUTH_USER_KEY);
+}
+
+function setAuthSession(token, username) {
+    localStorage.setItem(AUTH_STORAGE_KEY, token);
+    localStorage.setItem(AUTH_USER_KEY, username);
+    updateAuthStatusUI();
+}
+
+function clearAuthSession() {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    updateAuthStatusUI();
+}
+
+function getAuthHeaders(includeJson = false) {
+    const headers = {};
+    const token = getAuthToken();
+
+    if (includeJson) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
+}
+
+function updateAuthStatusUI() {
+    const status = document.getElementById("auth-status");
+    const logoutBtn = document.getElementById("logout-btn");
+    const authForms = document.getElementById("auth-forms");
+
+    if (!status || !logoutBtn) return;
+
+    const username = getAuthUsername();
+    const token = getAuthToken();
+
+    if (username && token) {
+        status.textContent = `Hello, ${username}`;
+        status.classList.remove("logged-out");
+        status.classList.add("logged-in");
+
+        logoutBtn.style.display = "inline-block";
+
+        if (authForms) {
+            authForms.style.display = "none";
+        }
+
+    } else {
+        status.textContent = "Not logged in";
+        status.classList.remove("logged-in");
+        status.classList.add("logged-out");
+
+        logoutBtn.style.display = "none";
+
+        if (authForms) {
+            authForms.style.display = "grid";
+        }
+    }
+}
+
+async function registerUser() {
+    const message = document.getElementById("auth-message");
+
+    const username = document.getElementById("register-username").value.trim();
+    const email = document.getElementById("register-email").value.trim();
+    const password = document.getElementById("register-password").value;
+
+    if (!username || !email || !password) {
+        message.textContent = "Please complete all registration fields.";
+        return;
+    }
+
+    const payload = {
+        username,
+        email,
+        password
+    };
+
+    try {
+        const registerRes = await fetch("/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!registerRes.ok) {
+            const errorText = await safeReadError(registerRes);
+            message.textContent = errorText || "Registration failed.";
+            return;
+        }
+
+        const loginRes = await fetch("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username,
+                password
+            })
+        });
+
+        if (!loginRes.ok) {
+            const errorText = await safeReadError(loginRes);
+            message.textContent = errorText || "Registration worked, but automatic login failed.";
+            return;
+        }
+
+        const loginData = await loginRes.json();
+        setAuthSession(loginData.access_token, username);
+        location.reload();
+    } catch (error) {
+        message.textContent = "Network error during registration.";
+    }
+}
+
+async function loginUser() {
+    const message = document.getElementById("auth-message");
+
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    if (!username || !password) {
+        message.textContent = "Please enter your username and password.";
+        return;
+    }
+
+    const payload = {
+        username,
+        password
+    };
+
+    try {
+        const res = await fetch("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const errorText = await safeReadError(res);
+            message.textContent = errorText || "Invalid username or password.";
+            return;
+        }
+
+        const data = await res.json();
+        setAuthSession(data.access_token, username);
+        location.reload();
+    } catch (error) {
+        message.textContent = "Network error during login.";
+    }
+}
+
+function logoutUser() {
+    clearAuthSession();
+    document.getElementById("auth-message").textContent = "Logged out.";
+    document.getElementById("message").textContent = "";
+    updateAuthStatusUI();
+    loadWorkouts();
 }
 
 function setTodayDate() {
@@ -42,6 +221,11 @@ async function createWorkout(event) {
 
     const message = document.getElementById("message");
 
+    if (!getAuthToken()) {
+        message.textContent = "Please log in to create a workout.";
+        return;
+    }
+
     const payload = {
         workout_type: document.getElementById("type").value,
         duration_min: parseInt(document.getElementById("duration").value, 10),
@@ -53,9 +237,7 @@ async function createWorkout(event) {
     try {
         const res = await fetch("/workouts", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: getAuthHeaders(true),
             body: JSON.stringify(payload)
         });
 
@@ -224,10 +406,25 @@ async function populateWorkoutExerciseSelect(selectElement, exercises) {
 
 async function loadWorkouts() {
     const container = document.getElementById("workouts");
+
+    if (!getAuthToken()) {
+        container.innerHTML = `<p class="empty-state">Please log in to view your workout history.</p>`;
+        return;
+    }
+
     container.innerHTML = `<p class="loading-state">Loading workouts...</p>`;
 
     try {
-        const res = await fetch("/workouts");
+        const res = await fetch("/workouts", {
+            headers: getAuthHeaders()
+        });
+
+        if (res.status === 401) {
+            clearAuthSession();
+            container.innerHTML = `<p class="empty-state">Your session has expired. Please log in again.</p>`;
+            return;
+        }
+
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -273,10 +470,22 @@ async function loadWorkouts() {
 }
 
 async function deleteWorkout(id) {
+    if (!getAuthToken()) {
+        alert("Please log in first.");
+        return;
+    }
+
     try {
         const res = await fetch(`/workouts/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: getAuthHeaders()
         });
+
+        if (res.status === 401) {
+            clearAuthSession();
+            alert("Your session has expired. Please log in again.");
+            return;
+        }
 
         if (!res.ok) {
             alert("Failed to delete workout.");
@@ -535,7 +744,16 @@ function renderExerciseCard(exercise) {
 async function safeReadError(response) {
     try {
         const data = await response.json();
-        return data.detail || null;
+
+        if (typeof data.detail === "string") {
+            return data.detail;
+        }
+
+        if (Array.isArray(data.detail) && data.detail.length > 0) {
+            return "Validation error.";
+        }
+
+        return null;
     } catch (error) {
         return null;
     }

@@ -13,11 +13,93 @@
                 <p class="eyebrow">COMP3011 Fitness API</p>
                 <h1>Fitness Intelligence Dashboard</h1>
                 <p class="hero-text">
-                    A dashboard for workout logging, exercise exploration, recommendation, and analytics
-                    powered by the Fitness API.
+                    A dashboard for workout logging, exercise exploration, recommendation, analytics,
+                    and authenticated multi-user access powered by the Fitness API.
                 </p>
             </div>
         </header>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Authentication</h2>
+                    <p class="section-text">Register, log in, and access your private workout data.</p>
+                </div>
+            </div>
+
+            <div class="auth-status-bar">
+                <span id="auth-status" class="auth-status-pill logged-out">Not logged in</span>
+                <button
+                    type="button"
+                    id="logout-btn"
+                    class="secondary-btn"
+                    onclick="logoutUser()"
+                    style="display: none;"
+                >
+                    Logout
+                </button>
+            </div>
+
+            <div id="auth-forms" class="two-column-grid">
+                <section class="auth-panel">
+                    <h3>Create Account</h3>
+                    <div class="form-grid">
+                        <input
+                            id="register-username"
+                            type="text"
+                            placeholder="Username"
+                            autocomplete="username"
+                        >
+                        <input
+                            id="register-email"
+                            type="email"
+                            placeholder="Email"
+                            autocomplete="email"
+                        >
+                        <input
+                            id="register-password"
+                            type="password"
+                            placeholder="Password"
+                            autocomplete="new-password"
+                        >
+                        <button
+                            type="button"
+                            id="register-btn"
+                            onclick="registerUser()"
+                        >
+                            Register
+                        </button>
+                    </div>
+                </section>
+
+                <section class="auth-panel">
+                    <h3>Login</h3>
+                    <div class="form-grid">
+                        <input
+                            id="login-username"
+                            type="text"
+                            placeholder="Username"
+                            autocomplete="username"
+                        >
+                        <input
+                            id="login-password"
+                            type="password"
+                            placeholder="Password"
+                            autocomplete="current-password"
+                        >
+                        <button
+                            type="button"
+                            id="login-btn"
+                            onclick="loginUser()"
+                        >
+                            Login
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <p id="auth-message" class="message"></p>
+        </section>
 
         <section class="summary-grid">
             <div class="summary-card">
@@ -84,7 +166,13 @@
                             <h3>Workout Exercises</h3>
                             <p class="section-text small-text">Add one or more exercises from the dataset to this workout.</p>
                         </div>
-                        <button type="button" class="secondary-btn" onclick="addWorkoutExerciseRow()">Add Exercise Row</button>
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            onclick="addWorkoutExerciseRow()"
+                        >
+                            Add Exercise Row
+                        </button>
                     </div>
 
                     <div id="workout-exercise-rows" class="workout-exercise-rows"></div>
@@ -251,7 +339,7 @@
             <div class="card-header">
                 <div>
                     <h2>Workout History</h2>
-                    <p class="section-text">Previously logged workouts from the API.</p>
+                    <p class="section-text">Previously logged workouts from your account.</p>
                 </div>
                 <button type="button" onclick="loadWorkouts()">Refresh</button>
             </div>

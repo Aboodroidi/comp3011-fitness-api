@@ -9,6 +9,10 @@
     --primary-hover: #222222;
     --danger: #c0392b;
     --danger-hover: #a93226;
+    --success: #0f766e;
+    --success-soft: #ecfdf5;
+    --warning: #92400e;
+    --warning-soft: #fff7ed;
     --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
     --radius: 16px;
 }
@@ -198,7 +202,47 @@ button:hover {
 .message {
     margin-top: 14px;
     font-weight: 600;
-    color: #0f766e;
+    color: var(--success);
+}
+
+.auth-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.auth-status-pill {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.auth-status-pill.logged-in {
+    background: var(--success-soft);
+    color: var(--success);
+    border: 1px solid #a7f3d0;
+}
+
+.auth-status-pill.logged-out {
+    background: var(--warning-soft);
+    color: var(--warning);
+    border: 1px solid #fdba74;
+}
+
+.auth-panel {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--soft);
+}
+
+.auth-panel h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
 }
 
 .weekly-summary {
@@ -418,7 +462,8 @@ button:hover {
     }
 
     .card-header,
-    .builder-header {
+    .builder-header,
+    .auth-status-bar {
         flex-direction: column;
         align-items: stretch;
     }
